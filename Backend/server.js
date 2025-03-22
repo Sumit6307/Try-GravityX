@@ -1,15 +1,16 @@
 const express = require('express');
-const connectDB = require('./config/db');
+const mongoose = require('mongoose');
 const cors = require('cors');
+const profileRoutes = require('./routes/profiles');
 
 const app = express();
-connectDB();
-
-// Explicitly allow localhost:5174
-app.use(cors({ origin: 'http://localhost:5174' }));
+app.use(cors());
 app.use(express.json());
+app.use('/api/profiles', profileRoutes);
 
-app.use('/api/profiles', require('./routes/profiles'));
+mongoose.connect('mongodb://localhost/gravityx', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+}).then(() => console.log('MongoDB connected'));
 
-const PORT = 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(5000, () => console.log('Server running on port 5000'));

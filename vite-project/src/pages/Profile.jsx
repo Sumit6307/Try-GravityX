@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { motion } from 'framer-motion';
+import { FaGithub, FaLinkedin, FaTwitter } from 'react-icons/fa';
 
 function Profile() {
   const { id } = useParams();
@@ -18,7 +20,7 @@ function Profile() {
 
   const handleEdit = () => {
     if (!editToken) {
-      const token = prompt('Please enter your edit token:');
+      const token = prompt('Enter your edit token:');
       if (token) {
         setEditToken(token);
         localStorage.setItem(`editToken_${id}`, token);
@@ -29,65 +31,73 @@ function Profile() {
     }
   };
 
-  if (!profile) return <div className="text-center text-white">Loading...</div>;
+  if (!profile) return <div className="text-center text-white pt-24">Loading...</div>;
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="bg-gray-800 p-6 rounded-lg shadow-md">
-        <div className="flex items-start space-x-4">
-          <div className="w-24 h-24 bg-gray-600 rounded-full flex items-center justify-center text-white text-3xl">
-            {profile.name[0]}
-          </div>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="container mx-auto p-6 pt-24"
+    >
+      <div className="glass-effect p-8 rounded-xl">
+        <div className="flex flex-col md:flex-row items-start space-y-6 md:space-y-0 md:space-x-8">
+          <img
+            src={profile.imageUrl || 'https://via.placeholder.com/150'}
+            alt={profile.name}
+            className="w-32 h-32 rounded-full object-cover border-4 border-neonBlue"
+          />
           <div className="flex-1">
-            <h1 className="text-3xl font-bold text-white">{profile.name}</h1>
-            <p className="text-gray-400">{profile.location || 'No location'}</p>
-            <div className="flex flex-wrap gap-2 mt-2">
-              {profile.skills.map((skill, idx) => (
-                <span key={idx} className="bg-gray-700 text-gray-200 text-sm px-2 py-1 rounded">
-                  {skill}
-                </span>
-              ))}
-            </div>
-            <p className="mt-2 text-gray-300">{profile.bio || 'No bio available'}</p>
-            <div className="flex space-x-2 mt-2">
+            <h1 className="text-4xl font-bold text-white">{profile.name}</h1>
+            <p className="text-gray-400 mt-2">{profile.location || 'No location'}</p>
+            <p className="text-gray-300 mt-4">{profile.bio || 'No bio available'}</p>
+            <div className="flex space-x-4 mt-4">
               {profile.socialLinks.github && (
                 <a href={profile.socialLinks.github} target="_blank" rel="noopener noreferrer">
-                  <img src="https://cdn-icons-png.flaticon.com/512/25/25231.png" alt="GitHub" className="w-5 h-5" />
+                  <FaGithub className="text-white hover:text-neonBlue" size={24} />
                 </a>
               )}
               {profile.socialLinks.linkedin && (
                 <a href={profile.socialLinks.linkedin} target="_blank" rel="noopener noreferrer">
-                  <img src="https://cdn-icons-png.flaticon.com/512/174/174857.png" alt="LinkedIn" className="w-5 h-5" />
+                  <FaLinkedin className="text-white hover:text-neonBlue" size={24} />
                 </a>
               )}
               {profile.socialLinks.twitter && (
                 <a href={profile.socialLinks.twitter} target="_blank" rel="noopener noreferrer">
-                  <img src="https://cdn-icons-png.flaticon.com/512/733/733579.png" alt="Twitter" className="w-5 h-5" />
+                  <FaTwitter className="text-white hover:text-neonBlue" size={24} />
                 </a>
               )}
             </div>
+            <p className="text-sm text-gray-500 mt-2">Profile Views: {profile.views}</p>
             {editToken && (
-              <button
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={handleEdit}
-                className="mt-4 bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
+                className="mt-6 shine-button text-white p-3 rounded-lg"
               >
                 Edit Profile
-              </button>
+              </motion.button>
             )}
           </div>
         </div>
-        <div className="mt-6">
-          <h2 className="text-2xl font-semibold text-white">Projects</h2>
+        <div className="mt-8">
+          <h2 className="text-2xl font-semibold text-neonPurple mb-4">Projects</h2>
           {profile.projects.map((project, idx) => (
-            <div key={idx} className="mt-2">
-              <h3 className="text-lg font-semibold text-white">{project.title}</h3>
-              <p className="text-gray-300">{project.description}</p>
-              <pre className="bg-gray-700 text-gray-200 p-2 rounded mt-1">{project.codeSnippet}</pre>
-            </div>
+            <motion.div
+              key={idx}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.1 }}
+              className="mb-6 glass-effect p-4 rounded-lg"
+            >
+              <h3 className="text-xl font-semibold text-white">{project.title}</h3>
+              <p className="text-gray-300 mt-2">{project.description}</p>
+              <pre className="bg-gray-800 text-gray-200 p-4 rounded mt-2 overflow-x-auto">{project.codeSnippet}</pre>
+            </motion.div>
           ))}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 

@@ -9,13 +9,15 @@ const profileSchema = new mongoose.Schema({
     linkedin: String,
     twitter: String,
   },
-  location: String, // Added location field
+  location: String,
+  imageUrl: String,
   projects: [{
     title: String,
     description: String,
     codeSnippet: String,
   }],
   editToken: { type: String, required: true, unique: true },
+  views: { type: Number, default: 0 }, // New field for profile views
   createdAt: { type: Date, default: Date.now },
 });
 

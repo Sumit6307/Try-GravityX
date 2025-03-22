@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 
 function AddProfile() {
   const [formData, setFormData] = useState({
@@ -10,97 +11,161 @@ function AddProfile() {
     github: '',
     linkedin: '',
     twitter: '',
-    location: '', // Added location field
+    location: '',
+    image: null,
     projects: [{ title: '', description: '', codeSnippet: '' }],
   });
   const [editToken, setEditToken] = useState(null);
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+  const handleFileChange = e => {
+    setFormData({ ...formData, image: e.target.files[0] });
+  };
+
+  const handleProjectChange = (idx, field, value) => {
+    const newProjects = [...formData.projects];
+    newProjects[idx][field] = value;
+    setFormData({ ...formData, projects: newProjects });
+  };
+
+  const addProject = () => {
+    setFormData({ ...formData, projects: [...formData.projects, { title: '', description: '', codeSnippet: '' }] });
+  };
+
+  const handleSubmit = async e => {
     e.preventDefault();
+    const data = new FormData();
+    data.append('name', formData.name);
+    data.append('bio', formData.bio);
+    data.append('skills', formData.skills);
+    data.append('socialLinks', JSON.stringify({ github: formData.github, linkedin: formData.linkedin, twitter: formData.twitter }));
+    data.append('location', formData.location);
+    data.append('projects', JSON.stringify(formData.projects));
+    if (formData.image) data.append('image', formData.image);
+
     try {
-      const res = await axios.post('http://localhost:5000/api/profiles/add', {
-        ...formData,
-        skills: formData.skills.split(',').map(s => s.trim()),
-        socialLinks: { github: formData.github, linkedin: formData.linkedin, twitter: formData.twitter },
-      }, {
-        headers: { 'Content-Type': 'application/json' }
+      const res = await axios.post('http://localhost:5000/api/profiles/add', data, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
       setEditToken(res.data.editToken);
-      // Store edit token in localStorage with profile ID
       localStorage.setItem(`editToken_${res.data.profile._id}`, res.data.editToken);
-      alert(`Profile added! Save this token to edit later: ${res.data.editToken}`);
+      alert(`Profile added! Save this token: ${res.data.editToken}`);
       navigate(`/profile/${res.data.profile._id}`);
     } catch (err) {
-      console.error('Full error:', err);
-      console.log('Request failed to:', 'http://localhost:5000/api/profiles/add');
-      alert('Failed to add profile: ' + (err.response?.data?.error || err.message));
+      console.error(err);
+      alert('Failed to add profile');
     }
   };
 
   return (
-    <div className="container mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6 text-white">Add Your Profile</h1>
-      <form onSubmit={handleSubmit} className="space-y-4 max-w-lg mx-auto">
+    <motion.div
+      initial={{ opacity: 0, y: 50 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="container mx-auto p-6 pt-24"
+    >
+      <h1 className="text-4xl font-bold text-neonBlue mb-8 text-center">Create Your GravityX Profile</h1>
+      <form onSubmit={handleSubmit} className="glass-effect p-8 rounded-xl max-w-2xl mx-auto space-y-6">
         <input
           type="text"
           placeholder="Name"
           value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          className="w-full p-2 border rounded bg-gray-800 text-white focus:outline-none"
+          onChange={e => setFormData({ ...formData, name: e.target.value })}
+          className="w-full p-3 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-neonBlue"
         />
         <input
           type="text"
           placeholder="Location"
           value={formData.location}
-          onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-          className="w-full p-2 border rounded bg-gray-800 text-white focus:outline-none"
+          onChange={e => setFormData({ ...formData, location: e.target.value })}
+          className="w-full p-3 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-neonBlue"
         />
         <textarea
           placeholder="Bio"
           value={formData.bio}
-          onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-          className="w-full p-2 border rounded bg-gray-800 text-white focus:outline-none"
+          onChange={e => setFormData({ ...formData, bio: e.target.value })}
+          className="w-full p-3 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-neonBlue"
         />
         <input
           type="text"
           placeholder="Skills (comma-separated)"
           value={formData.skills}
-          onChange={(e) => setFormData({ ...formData, skills: e.target.value })}
-          className="w-full p-2 border rounded bg-gray-800 text-white focus:outline-none"
+          onChange={e => setFormData({ ...formData, skills: e.target.value })}
+          className="w-full p-3 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-neonBlue"
         />
         <input
           type="text"
           placeholder="GitHub URL"
           value={formData.github}
-          onChange={(e) => setFormData({ ...formData, github: e.target.value })}
-          className="w-full p-2 border rounded bg-gray-800 text-white focus:outline-none"
+          onChange={e => setFormData({ ...formData, github: e.target.value })}
+          className="w-full p-3 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-neonBlue"
         />
         <input
           type="text"
           placeholder="LinkedIn URL"
           value={formData.linkedin}
-          onChange={(e) => setFormData({ ...formData, linkedin: e.target.value })}
-          className="w-full p-2 border rounded bg-gray-800 text-white focus:outline-none"
+          onChange={e => setFormData({ ...formData, linkedin: e.target.value })}
+          className="w-full p-3 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-neonBlue"
         />
         <input
           type="text"
           placeholder="Twitter URL"
           value={formData.twitter}
-          onChange={(e) => setFormData({ ...formData, twitter: e.target.value })}
-          className="w-full p-2 border rounded bg-gray-800 text-white focus:outline-none"
+          onChange={e => setFormData({ ...formData, twitter: e.target.value })}
+          className="w-full p-3 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-neonBlue"
         />
-        <button type="submit" className="bg-blue-600 text-white p-2 rounded hover:bg-blue-700 w-full">
-          Submit
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          className="w-full p-3 rounded bg-gray-800 text-white"
+        />
+        <h3 className="text-xl font-semibold text-neonPurple">Projects</h3>
+        {formData.projects.map((project, idx) => (
+          <div key={idx} className="space-y-3">
+            <input
+              type="text"
+              placeholder="Project Title"
+              value={project.title}
+              onChange={e => handleProjectChange(idx, 'title', e.target.value)}
+              className="w-full p-3 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-neonBlue"
+            />
+            <textarea
+              placeholder="Description"
+              value={project.description}
+              onChange={e => handleProjectChange(idx, 'description', e.target.value)}
+              className="w-full p-3 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-neonBlue"
+            />
+            <textarea
+              placeholder="Code Snippet"
+              value={project.codeSnippet}
+              onChange={e => handleProjectChange(idx, 'codeSnippet', e.target.value)}
+              className="w-full p-3 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-neonBlue"
+            />
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={addProject}
+          className="text-neonBlue hover:text-neonPurple"
+        >
+          + Add Another Project
         </button>
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          type="submit"
+          className="w-full shine-button text-white p-3 rounded-lg"
+        >
+          Submit Profile
+        </motion.button>
       </form>
       {editToken && (
-        <div className="mt-4 p-4 bg-green-100 dark:bg-green-900 rounded">
-          <p>Profile added! Use this token to edit: <strong>{editToken}</strong></p>
-          <p className="text-sm">Save it somewhere safe!</p>
+        <div className="mt-6 p-4 glass-effect rounded text-center">
+          <p>Profile added! Edit Token: <strong>{editToken}</strong></p>
+          <p className="text-sm text-gray-400">Save this token securely!</p>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }
 
