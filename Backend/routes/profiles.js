@@ -5,12 +5,12 @@ const { v4: uuidv4 } = require('uuid');
 
 // Add a profile
 router.post('/add', async (req, res) => {
-  const { name, bio, skills, socialLinks, projects } = req.body;
+  const { name, bio, skills, socialLinks, location, projects } = req.body;
   try {
-    const editToken = uuidv4(); // Generate unique token
-    const profile = new Profile({ name, bio, skills, socialLinks, projects, editToken });
+    const editToken = uuidv4();
+    const profile = new Profile({ name, bio, skills, socialLinks, location, projects, editToken });
     await profile.save();
-    res.json({ profile, editToken }); // Return profile and token
+    res.json({ profile, editToken });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -55,7 +55,7 @@ router.get('/search', async (req, res) => {
 
 // Edit a profile (using editToken)
 router.put('/edit/:id', async (req, res) => {
-  const { editToken, name, bio, skills, socialLinks, projects } = req.body;
+  const { editToken, name, bio, skills, socialLinks, location, projects } = req.body;
   try {
     const profile = await Profile.findById(req.params.id);
     if (!profile) return res.status(404).json({ msg: 'Profile not found' });
@@ -65,6 +65,7 @@ router.put('/edit/:id', async (req, res) => {
     profile.bio = bio || profile.bio;
     profile.skills = skills || profile.skills;
     profile.socialLinks = socialLinks || profile.socialLinks;
+    profile.location = location || profile.location;
     profile.projects = projects || profile.projects;
     await profile.save();
 

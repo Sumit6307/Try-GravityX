@@ -12,7 +12,8 @@ function EditProfile() {
     github: '',
     linkedin: '',
     twitter: '',
-    editToken: '',
+    location: '',
+    editToken: localStorage.getItem(`editToken_${id}`) || '',
   });
 
   useEffect(() => {
@@ -25,7 +26,8 @@ function EditProfile() {
         github: res.data.socialLinks.github || '',
         linkedin: res.data.socialLinks.linkedin || '',
         twitter: res.data.socialLinks.twitter || '',
-        editToken: '',
+        location: res.data.location || '',
+        editToken: localStorage.getItem(`editToken_${id}`) || '',
       });
     };
     fetchProfile();
@@ -48,58 +50,67 @@ function EditProfile() {
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-6">Edit Your Profile</h1>
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="container mx-auto p-6">
+      <h1 className="text-3xl font-bold mb-6 text-white">Edit Your Profile</h1>
+      <form onSubmit={handleSubmit} className="space-y-4 max-w-lg mx-auto">
         <input
           type="text"
           placeholder="Name"
           value={formData.name}
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          className="w-full p-2 border rounded dark:bg-gray-800 dark:text-white focus:outline-none"
+          className="w-full p-2 border rounded bg-gray-800 text-white focus:outline-none"
+        />
+        <input
+          type="text"
+          placeholder="Location"
+          value={formData.location}
+          onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+          className="w-full p-2 border rounded bg-gray-800 text-white focus:outline-none"
         />
         <textarea
           placeholder="Bio"
           value={formData.bio}
           onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-          className="w-full p-2 border rounded dark:bg-gray-800 dark:text-white focus:outline-none"
+          className="w-full p-2 border rounded bg-gray-800 text-white focus:outline-none"
         />
         <input
           type="text"
           placeholder="Skills (comma-separated)"
           value={formData.skills}
           onChange={(e) => setFormData({ ...formData, skills: e.target.value })}
-          className="w-full p-2 border rounded dark:bg-gray-800 dark:text-white focus:outline-none"
+          className="w-full p-2 border rounded bg-gray-800 text-white focus:outline-none"
         />
         <input
           type="text"
           placeholder="GitHub URL"
           value={formData.github}
           onChange={(e) => setFormData({ ...formData, github: e.target.value })}
-          className="w-full p-2 border rounded dark:bg-gray-800 dark:text-white focus:outline-none"
+          className="w-full p-2 border rounded bg-gray-800 text-white focus:outline-none"
         />
         <input
           type="text"
           placeholder="LinkedIn URL"
           value={formData.linkedin}
           onChange={(e) => setFormData({ ...formData, linkedin: e.target.value })}
-          className="w-full p-2 border rounded dark:bg-gray-800 dark:text-white focus:outline-none"
+          className="w-full p-2 border rounded bg-gray-800 text-white focus:outline-none"
         />
         <input
           type="text"
           placeholder="Twitter URL"
           value={formData.twitter}
           onChange={(e) => setFormData({ ...formData, twitter: e.target.value })}
-          className="w-full p-2 border rounded dark:bg-gray-800 dark:text-white focus:outline-none"
+          className="w-full p-2 border rounded bg-gray-800 text-white focus:outline-none"
         />
         <input
           type="text"
           placeholder="Enter your edit token"
           value={formData.editToken}
           onChange={(e) => setFormData({ ...formData, editToken: e.target.value })}
-          className="w-full p-2 border rounded dark:bg-gray-800 dark:text-white focus:outline-none"
+          className="w-full p-2 border rounded bg-gray-800 text-white focus:outline-none"
         />
-        <button type="submit" className="bg-blue-600 text-white p-2 rounded hover:bg-blue-700">Update Profile</button>
+        <button type="submit" className="bg-blue-600 text-white p-2 rounded hover:bg-blue-700 w-full">
+          Update Profile
+        </button>
       </form>
     </div>
   );

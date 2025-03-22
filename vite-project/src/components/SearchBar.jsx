@@ -15,10 +15,12 @@ function SearchBar({ setProfiles }) {
         type="text"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        className="p-2 rounded-l-md border dark:bg-gray-800 dark:text-white focus:outline-none"
-        placeholder="Search profiles or skills..."
+        className="p-2 rounded-l-md bg-gray-800 text-white border border-gray-700 focus:outline-none w-1/3"
+        placeholder="Search user by name"
       />
-      <button onClick={handleSearch} className="p-2 bg-blue-600 text-white rounded-r-md hover:bg-blue-700">Search</button>
+      <button onClick={handleSearch} className="p-2 bg-blue-600 text-white rounded-r-md hover:bg-blue-700">
+        Search
+      </button>
     </div>
   );
 }
