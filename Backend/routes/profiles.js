@@ -53,6 +53,8 @@ router.post('/add', limiter, upload.single('image'), async (req, res) => {
   }
 });
 
+
+
 router.get('/', async (req, res) => {
   try {
     const profiles = await Profile.find().sort({ views: -1 }).limit(50);
@@ -79,6 +81,47 @@ router.get('/search', async (req, res) => {
     res.json(profiles);
   } catch (err) {
     console.error('Search Profiles Error:', err.message);
+    res.status(500).json({ error: 'Server error', details: err.message });
+  }
+});
+
+router.put('/edit/:id', limiter, upload.single('image'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { editToken, name, bio, skills, socialLinks, location, projects } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: 'Invalid profile ID' });
+    }
+
+    const profile = await Profile.findById(id);
+    if (!profile) return res.status(404).json({ error: 'Profile not found' });
+    if (profile.editToken !== editToken) return res.status(403).json({ error: 'Invalid edit token' });
+
+    let imageUrl = profile.imageUrl;
+    if (req.file) {
+      const result = await new Promise((resolve, reject) => {
+        cloudinary.uploader.upload_stream({ resource_type: 'image' }, (error, result) => {
+          if (error) reject(error);
+          resolve(result);
+        }).end(req.file.buffer);
+      });
+      imageUrl = result.secure_url;
+    }
+
+    profile.name = name;
+    profile.bio = bio;
+    profile.skills = skills.split(',').map(s => s.trim());
+    profile.socialLinks = JSON.parse(socialLinks);
+    profile.location = location;
+    profile.imageUrl = imageUrl;
+    profile.projects = JSON.parse(projects);
+    profile.updatedAt = Date.now();
+
+    await profile.save();
+    res.json({ message: 'Profile updated successfully' });
+  } catch (err) {
+    console.error('Edit Profile Error:', err.message);
     res.status(500).json({ error: 'Server error', details: err.message });
   }
 });
