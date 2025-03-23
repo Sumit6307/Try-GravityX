@@ -2,27 +2,53 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { FaGithub, FaLinkedin, FaTwitter, FaInstagram } from 'react-icons/fa';
+import { FaGithub, FaLinkedin, FaTwitter, FaInstagram, FaEdit, FaCode, FaExternalLinkAlt } from 'react-icons/fa';
+
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0, scale: 0.95 },
+  visible: { opacity: 1, scale: 1, transition: { duration: 0.8, ease: 'easeOut' } },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+};
+
+const projectVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: (i) => ({ opacity: 1, y: 0, transition: { delay: i * 0.2, duration: 0.6 } }),
+  hover: { scale: 1.03, boxShadow: '0 0 25px rgba(0, 212, 255, 0.4)' },
+};
 
 function Profile() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [profile, setProfile] = useState(null);
-  const [editToken, setEditToken] = useState(localStorage.getItem(`editToken_${id}`) || '');
+  const [profileData, setProfileData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchProfile = async () => {
-      const res = await axios.get(`http://localhost:5000/api/profiles/${id}`);
-      setProfile(res.data);
+      try {
+        setLoading(true);
+        const response = await axios.get(`http://localhost:5000/api/profiles/${id}`);
+        console.log('API Response:', response.data);
+        setProfileData(response.data);
+      } catch (error) {
+        console.error('Fetch Error:', error.message);
+        setProfileData({ error: 'Failed to load profile' });
+      } finally {
+        setLoading(false);
+      }
     };
     fetchProfile();
   }, [id]);
 
   const handleEdit = () => {
+    const editToken = localStorage.getItem(`editToken_${id}`);
     if (!editToken) {
       const token = prompt('Enter your edit token:');
       if (token) {
-        setEditToken(token);
         localStorage.setItem(`editToken_${id}`, token);
         navigate(`/edit-profile/${id}`);
       }
@@ -31,83 +57,196 @@ function Profile() {
     }
   };
 
-  if (!profile) return <div className="text-center text-white pt-24">Loading...</div>;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 flex items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-2xl font-bold text-cyan-400 tracking-wide"
+        >
+          Loading Profile...
+        </motion.div>
+      </div>
+    );
+  }
+
+  if (profileData?.error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 flex items-center justify-center ">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-red-400 bg-red-900/30 p-6 rounded-lg shadow-lg text-center"
+        >
+          {profileData.error}
+        </motion.div>
+      </div>
+    );
+  }
+
+  const {
+    name = 'Unnamed Profile',
+    bio = 'No bio provided',
+    location = 'Unknown Location',
+    socialLinks = {},
+    projects = [],
+    views = 0,
+    imageUrl = 'https://via.placeholder.com/150',
+  } = profileData || {};
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="container mx-auto p-6 pt-24"
-    >
-      <div className="glass-effect p-8 rounded-xl">
-        <div className="flex flex-col md:flex-row items-start space-y-6 md:space-y-0 md:space-x-8">
-          <img
-            src={profile.imageUrl || 'https://via.placeholder.com/150'}
-            alt={profile.name}
-            className="w-32 h-32 rounded-full object-cover border-4 border-neonBlue"
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 text-white py-20 px-4 overflow-hidden relative  ">
+      {/* Cosmic Background Effect */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,212,255,0.1)_0%,transparent_70%)] -z-10" />
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500/50 to-purple-500/50" />
+
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="max-w-4xl mx-auto bg-gray-900/70 backdrop-blur-md rounded-xl p-8 shadow-[0_0_30px_rgba(0,212,255,0.2)] border border-cyan-500/20 mt-15"
+      >
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row items-center md:items-start gap-8  ">
+          <motion.img
+            src={imageUrl}
+            alt={name}
+            className="w-48 h-48 rounded-full border-4 border-cyan-400 object-cover shadow-[0_0_20px_rgba(0,212,255,0.6)]"
+            whileHover={{ scale: 1.05, rotate: 3 }}
+            transition={{ duration: 0.3 }}
           />
-          <div className="flex-1">
-            <h1 className="text-4xl neon-heading">{profile.name}</h1>
-            <p className="text-gray-400 mt-2">{profile.location || 'No location'}</p>
-            <p className="text-gray-300 mt-4">{profile.bio || 'No bio available'}</p>
-            <div className="flex space-x-4 mt-4">
-              {profile.socialLinks.github && (
-                <a href={profile.socialLinks.github} target="_blank" rel="noopener noreferrer">
-                  <FaGithub className="text-white hover:text-neonBlue" size={24} />
-                </a>
+          <div className="flex-1 text-center md:text-left">
+            <motion.h1
+              variants={itemVariants}
+              className="text-5xl font-extrabold text-cyan-400 mb-3 tracking-wider drop-shadow-[0_0_10px_rgba(0,212,255,0.5)]"
+            >
+              {name}
+            </motion.h1>
+            <motion.p
+              variants={itemVariants}
+              className="text-lg text-gray-300 flex items-center justify-center md:justify-start"
+            >
+              <span className="mr-2 text-cyan-400">📍</span> {location}
+            </motion.p>
+            <motion.p
+              variants={itemVariants}
+              className="mt-4 text-gray-200 leading-relaxed max-w-lg"
+            >
+              {bio}
+            </motion.p>
+            <motion.div
+              variants={itemVariants}
+              className="flex justify-center md:justify-start gap-6 mt-6"
+            >
+              {socialLinks.github && (
+                <motion.a
+                  href={socialLinks.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  whileHover={{ scale: 1.2, color: '#00D4FF' }}
+                  className="text-gray-300"
+                >
+                  <FaGithub size={28} />
+                </motion.a>
               )}
-              {profile.socialLinks.linkedin && (
-                <a href={profile.socialLinks.linkedin} target="_blank" rel="noopener noreferrer">
-                  <FaLinkedin className="text-white hover:text-neonBlue" size={24} />
-                </a>
+              {socialLinks.linkedin && (
+                <motion.a
+                  href={socialLinks.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  whileHover={{ scale: 1.2, color: '#00D4FF' }}
+                  className="text-gray-300"
+                >
+                  <FaLinkedin size={28} />
+                </motion.a>
               )}
-              {profile.socialLinks.twitter && (
-                <a href={profile.socialLinks.twitter} target="_blank" rel="noopener noreferrer">
-                  <FaTwitter className="text-white hover:text-neonBlue" size={24} />
-                </a>
+              {socialLinks.twitter && (
+                <motion.a
+                  href={socialLinks.twitter}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  whileHover={{ scale: 1.2, color: '#00D4FF' }}
+                  className="text-gray-300"
+                >
+                  <FaTwitter size={28} />
+                </motion.a>
               )}
-              {profile.socialLinks.instagram && (
-                <a href={profile.socialLinks.instagram} target="_blank" rel="noopener noreferrer">
-                  <FaInstagram className="text-white hover:text-neonBlue" size={24} />
-                </a>
+              {socialLinks.instagram && (
+                <motion.a
+                  href={socialLinks.instagram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  whileHover={{ scale: 1.2, color: '#00D4FF' }}
+                  className="text-gray-300"
+                >
+                  <FaInstagram size={28} />
+                </motion.a>
               )}
-            </div>
-            <p className="text-sm text-gray-500 mt-2">Profile Views: {profile.views}</p>
-            {editToken && (
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={handleEdit}
-                className="mt-6 shine-button text-white p-3 rounded-lg"
-              >
-                Edit Profile
-              </motion.button>
-            )}
+            </motion.div>
+            <motion.p
+              variants={itemVariants}
+              className="text-sm text-gray-400 mt-3"
+            >
+              Views: {views}
+            </motion.p>
+            <motion.button
+              onClick={handleEdit}
+              variants={itemVariants}
+              whileHover={{ scale: 1.05, boxShadow: '0 0 20px rgba(0, 212, 255, 0.6)' }}
+              whileTap={{ scale: 0.95 }}
+              className="mt-6 bg-gradient-to-r from-cyan-500 to-purple-500 text-white py-3 px-6 rounded-lg flex items-center gap-2 font-semibold"
+            >
+              <FaEdit /> Edit Profile
+            </motion.button>
           </div>
         </div>
-        <div className="mt-8">
-          <h2 className="text-2xl neon-heading mb-4">Projects</h2>
-          {profile.projects.map((project, idx) => (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.1 }}
-              className="mb-6 glass-effect p-4 rounded-lg"
-            >
-              <h3 className="text-xl font-semibold text-white">{project.title}</h3>
-              <p className="text-gray-300 mt-2">{project.description}</p>
-              {project.url && (
-                <a href={project.url} target="_blank" rel="noopener noreferrer" className="text-neonBlue hover:underline mt-2 block">
-                  View Project
-                </a>
-              )}
-              <pre className="bg-gray-800 text-gray-200 p-4 rounded mt-2 overflow-x-auto">{project.codeSnippet}</pre>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </motion.div>
+
+        {/* Projects Section */}
+        <motion.div variants={itemVariants} className="mt-12">
+          <h2 className="text-3xl font-bold text-cyan-400 mb-6 flex items-center">
+            <FaCode className="mr-2" /> Projects
+          </h2>
+          {projects.length > 0 ? (
+            projects.map((project, index) => (
+              <motion.div
+                key={index}
+                custom={index}
+                variants={projectVariants}
+                initial="hidden"
+                animate="visible"
+                whileHover="hover"
+                className="bg-gray-800/80 p-6 rounded-lg mb-6 border border-cyan-500/10 shadow-[0_0_15px_rgba(0,212,255,0.1)] transition-all duration-300"
+              >
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xl font-semibold text-white">{project.title || 'Untitled'}</h3>
+                  <FaCode className="text-cyan-400" />
+                </div>
+                <p className="text-gray-300 mt-2">{project.description || 'No description'}</p>
+                {project.url && (
+                  <a
+                    href={project.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-cyan-400 hover:text-purple-400 mt-2 inline-flex items-center gap-1 transition-colors"
+                  >
+                    <FaExternalLinkAlt /> View Project
+                  </a>
+                )}
+                <pre className="bg-black/70 text-gray-200 p-4 rounded mt-4 text-sm overflow-x-auto font-mono border border-cyan-500/20">
+                  {project.codeSnippet || 'No code provided'}
+                </pre>
+              </motion.div>
+            ))
+          ) : (
+            <p className="text-gray-400">No projects available</p>
+          )}
+        </motion.div>
+      </motion.div>
+
+      {/* Bottom Glow */}
+      <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500/50 to-purple-500/50" />
+    </div>
   );
 }
 
