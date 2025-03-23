@@ -15,9 +15,9 @@ const heroVariants = {
 
 const skillVariants = {
   animate: {
-    x: ['0%', '-100%'],
+    x: ['0%', '-50%'], // Adjusted for unique skills
     transition: {
-      x: { repeat: Infinity, repeatType: 'loop', duration: 18, ease: 'linear' },
+      x: { repeat: Infinity, repeatType: 'loop', duration: 15, ease: 'linear' },
     },
   },
 };
@@ -57,14 +57,21 @@ function Home() {
       setError('');
       const res = await axios.get('http://localhost:5000/api/profiles');
       setProfiles(res.data);
+
+      // Count skills across all profiles (case-insensitive)
       const skillCount = {};
-      res.data.forEach((p) =>
-        p.skills.forEach((s) => (skillCount[s] = (skillCount[s] || 0) + 1))
+      res.data.forEach((profile) =>
+        profile.skills.forEach((skill) => {
+          const normalizedSkill = skill.toLowerCase(); // Normalize to lowercase for counting
+          skillCount[normalizedSkill] = (skillCount[normalizedSkill] || 0) + 1;
+        })
       );
+
+      // Sort by frequency and take top 10 unique skills, convert to uppercase
       const topSkills = Object.entries(skillCount)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 5)
-        .map(([skill]) => skill);
+        .sort((a, b) => b[1] - a[1]) // Sort by count descending
+        .slice(0, 10) // Take top 10
+        .map(([skill]) => skill.toUpperCase()); // Convert to uppercase
       setTrendingSkills(topSkills);
     } catch (err) {
       console.error('Fetch Profiles Error:', err);
@@ -161,15 +168,15 @@ function Home() {
             <div className="flex items-center justify-center mb-6">
               <FaCode className="text-neonBlue mr-3" size={28} />
               <span className="text-xl font-semibold text-neonBlue drop-shadow-[0_0_8px_rgba(0,212,255,0.4)]">
-                Cosmic Skill Trends
+                Most Used Skills in the Cosmos
               </span>
             </div>
             <motion.div
-              className="flex space-x-8 whitespace-nowrap"
+              className="flex space-x-8 whitespace-nowrap justify-center" // Centered for balance with 10 skills
               variants={skillVariants}
               animate="animate"
             >
-              {trendingSkills.concat(trendingSkills).map((skill, idx) => (
+              {trendingSkills.map((skill, idx) => (
                 <motion.span
                   key={idx}
                   variants={skillTagVariants}
