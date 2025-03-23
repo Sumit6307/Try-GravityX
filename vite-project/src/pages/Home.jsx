@@ -4,8 +4,8 @@ import axios from 'axios';
 import { motion } from 'framer-motion';
 import ProfileCard from '../components/ProfileCard';
 import SearchBar from '../components/SearchBar';
-import { FaRocket, FaRedo } from 'react-icons/fa';
-import { LazyLoadComponent } from 'react-lazy-load-image-component'; // New import
+import { FaRocket, FaRedo, FaCode } from 'react-icons/fa';
+import { LazyLoadComponent } from 'react-lazy-load-image-component';
 
 // Animation variants
 const heroVariants = {
@@ -17,8 +17,33 @@ const skillVariants = {
   animate: {
     x: ['0%', '-100%'],
     transition: {
-      x: { repeat: Infinity, repeatType: 'loop', duration: 20, ease: 'linear' },
+      x: { repeat: Infinity, repeatType: 'loop', duration: 18, ease: 'linear' },
     },
+  },
+};
+
+const skillBoxVariants = {
+  hidden: { opacity: 0, scale: 0.9, rotateX: 20 },
+  visible: { 
+    opacity: 1, 
+    scale: 1, 
+    rotateX: 0, 
+    transition: { duration: 0.8, ease: 'easeOut' } 
+  },
+  hover: { 
+    scale: 1.02, 
+    rotateX: 5, 
+    boxShadow: '0 0 40px rgba(0, 212, 255, 0.6)' 
+  },
+};
+
+const skillTagVariants = {
+  hover: { 
+    scale: 1.15, 
+    y: -5, 
+    boxShadow: '0 0 20px rgba(0, 212, 255, 0.8)', 
+    rotate: 2,
+    transition: { duration: 0.2 } 
   },
 };
 
@@ -29,7 +54,7 @@ function Home() {
 
   const fetchProfiles = async () => {
     try {
-      setError(''); // Clear previous errors
+      setError('');
       const res = await axios.get('http://localhost:5000/api/profiles');
       setProfiles(res.data);
       const skillCount = {};
@@ -52,7 +77,10 @@ function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 pt-20 pb-12 overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 pt-20 pb-12 overflow-hidden relative">
+      {/* Cosmic Background Effect */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,212,255,0.1)_0%,transparent_70%)] -z-10" />
+
       {/* Hero Section */}
       <motion.section
         initial="hidden"
@@ -114,27 +142,48 @@ function Home() {
 
       {/* Trending Skills */}
       {trendingSkills.length > 0 && (
-        <section className="container mx-auto py-12 px-4">
-          <h2 className="text-4xl neon-heading mb-8 text-center">Trending Skills</h2>
-          <div className="relative overflow-hidden">
+        <section className="container mx-auto py-20 px-4">
+          <h2 className="text-5xl neon-heading mb-12 text-center tracking-wider drop-shadow-[0_0_15px_rgba(0,212,255,0.6)]">
+            Trending Skills
+          </h2>
+          <motion.div
+            variants={skillBoxVariants}
+            initial="hidden"
+            animate="visible"
+            whileHover="hover"
+            className="relative bg-gray-900/70 backdrop-blur-lg p-8 rounded-xl border border-neonBlue/40 shadow-[0_0_30px_rgba(0,212,255,0.3)] overflow-hidden perspective-1000 transform-style-3d"
+          >
+            {/* Holographic Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-br from-neonBlue/10 via-neonPurple/10 to-transparent opacity-50 animate-pulse -z-10" />
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-neonBlue to-neonPurple" />
+            <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-neonBlue to-neonPurple" />
+
+            <div className="flex items-center justify-center mb-6">
+              <FaCode className="text-neonBlue mr-3" size={28} />
+              <span className="text-xl font-semibold text-neonBlue drop-shadow-[0_0_8px_rgba(0,212,255,0.4)]">
+                Cosmic Skill Trends
+              </span>
+            </div>
             <motion.div
-              className="flex space-x-6 whitespace-nowrap"
+              className="flex space-x-8 whitespace-nowrap"
               variants={skillVariants}
               animate="animate"
             >
               {trendingSkills.concat(trendingSkills).map((skill, idx) => (
                 <motion.span
                   key={idx}
-                  className="bg-neonPurple/20 text-neonPurple px-6 py-3 rounded-full text-base md:text-lg font-medium"
-                  whileHover={{ scale: 1.1, backgroundColor: 'rgba(216, 27, 255, 0.3)' }}
+                  variants={skillTagVariants}
+                  whileHover="hover"
+                  className="inline-block bg-gradient-to-r from-neonBlue/50 to-neonPurple/50 text-white px-8 py-4 rounded-full text-lg font-bold border border-neonBlue/60 shadow-[0_0_15px_rgba(0,212,255,0.4)] transform-gpu"
                 >
                   {skill}
                 </motion.span>
               ))}
             </motion.div>
-            <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-gray-900 to-transparent pointer-events-none" />
-            <div className="absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-gray-900 to-transparent pointer-events-none" />
-          </div>
+            {/* Gradient overlays for fade effect */}
+            <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-gray-900/80 to-transparent pointer-events-none" />
+            <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-gray-900/80 to-transparent pointer-events-none" />
+          </motion.div>
         </section>
       )}
 
