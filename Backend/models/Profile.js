@@ -1,3 +1,4 @@
+// server/models/Profile.js
 const mongoose = require('mongoose');
 
 const profileSchema = new mongoose.Schema({
@@ -8,6 +9,7 @@ const profileSchema = new mongoose.Schema({
     github: String,
     linkedin: String,
     twitter: String,
+    instagram: String, // Added Instagram
   },
   location: String,
   imageUrl: String,
@@ -17,7 +19,7 @@ const profileSchema = new mongoose.Schema({
     codeSnippet: String,
   }],
   editToken: { type: String, required: true, unique: true },
-  views: { type: Number, default: 0 }, // New field for profile views
+  views: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now },
 });
 

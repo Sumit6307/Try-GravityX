@@ -1,21 +1,23 @@
+// client/src/pages/Home.jsx
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import Slider from 'react-slick';
 import ProfileCard from '../components/ProfileCard';
 import { motion } from 'framer-motion';
+import { FaSearch } from 'react-icons/fa';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 
 function Home() {
   const [profiles, setProfiles] = useState([]);
   const [trendingSkills, setTrendingSkills] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const fetchProfiles = async () => {
       const res = await axios.get('http://localhost:5000/api/profiles');
       setProfiles(res.data);
-      // Calculate trending skills
       const skillCount = {};
       res.data.forEach(p => p.skills.forEach(s => skillCount[s] = (skillCount[s] || 0) + 1));
       const topSkills = Object.entries(skillCount)
@@ -26,6 +28,15 @@ function Home() {
     };
     fetchProfiles();
   }, []);
+
+  const handleSearch = async () => {
+    try {
+      const res = await axios.get(`http://localhost:5000/api/profiles/search?name=${searchQuery}`);
+      setProfiles(res.data);
+    } catch (err) {
+      console.error('Error searching profiles:', err);
+    }
+  };
 
   const sliderSettings = {
     dots: true,
@@ -48,18 +59,35 @@ function Home() {
         transition={{ duration: 1 }}
         className="text-center py-20 bg-gradient-to-r from-neonBlue/20 to-neonPurple/20"
       >
-        <h1 className="text-6xl font-extrabold text-white mb-4">
-          <span className="text-neonBlue">GravityX</span> - Unleash Your Developer Identity
-        </h1>
-        <p className="text-xl text-gray-300 mb-8">Join 2M+ developers worldwide. Showcase your skills, connect, and shine.</p>
+        <h1 className="text-5xl neon-heading mb-4">GravityX</h1>
+        <p className="text-xl text-gray-300 mb-8">Join 2M+ Developers Worldwide</p>
         <Link to="/add-profile" className="shine-button text-white px-6 py-3 rounded-lg text-lg font-semibold">
-          Create Your Profile
+          Create Profile
         </Link>
       </motion.div>
 
-      {/* Featured Developers Carousel */}
+      {/* Search Bar */}
+      <div className="container mx-auto py-6">
+        <div className="relative max-w-md mx-auto">
+          <div className="flex items-center bg-gray-800/80 border border-gray-700 rounded-lg">
+            <label className="text-gray-400 text-sm px-3">Name</label>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search user by name"
+              className="w-full p-3 bg-transparent text-white focus:outline-none"
+            />
+            <button onClick={handleSearch} className="p-3">
+              <FaSearch className="text-gray-400 hover:text-neonBlue" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Featured Developers */}
       <div className="container mx-auto py-12">
-        <h2 className="text-3xl font-bold text-neonBlue mb-6 text-center">Featured Developers</h2>
+        <h2 className="text-3xl neon-heading mb-6 text-center">Featured Devs</h2>
         <Slider {...sliderSettings}>
           {profiles.slice(0, 5).map(profile => (
             <div key={profile._id} className="px-2">
@@ -71,7 +99,7 @@ function Home() {
 
       {/* Trending Skills */}
       <div className="container mx-auto py-12">
-        <h2 className="text-3xl font-bold text-neonPurple mb-6 text-center">Trending Skills</h2>
+        <h2 className="text-3xl neon-heading mb-6 text-center">Top Skills</h2>
         <div className="flex flex-wrap justify-center gap-4">
           {trendingSkills.map((skill, idx) => (
             <motion.span
@@ -87,12 +115,12 @@ function Home() {
 
       {/* All Profiles */}
       <div className="container mx-auto py-12">
-        <h2 className="text-3xl font-bold text-white mb-6 text-center">Explore All Profiles</h2>
+        <h2 className="text-3xl neon-heading mb-6 text-center">All Profiles</h2>
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         >
           {profiles.map(profile => (
             <ProfileCard key={profile._id} profile={profile} />

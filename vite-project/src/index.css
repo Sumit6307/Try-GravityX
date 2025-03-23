@@ -1,5 +1,6 @@
 @import "tailwindcss";
 
+/* client/src/index.css */
 
 body {
   font-family: 'Poppins', sans-serif;
@@ -37,4 +38,12 @@ body {
   0% { transform: translateX(-100%) rotate(30deg); }
   50% { transform: translateX(100%) rotate(30deg); }
   100% { transform: translateX(-100%) rotate(30deg); }
+}
+
+.neon-heading {
+  font-weight: 700;
+  background: linear-gradient(90deg, #00f7ff, #ff00ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 10px rgba(0, 247, 255, 0.5), 0 0 20px rgba(255, 0, 255, 0.5);
 }

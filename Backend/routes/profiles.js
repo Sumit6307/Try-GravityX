@@ -1,3 +1,4 @@
+// server/routes/profiles.js
 const express = require('express');
 const router = express.Router();
 const Profile = require('../models/Profile');
@@ -6,9 +7,9 @@ const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
 
 cloudinary.config({
-  cloud_name: 'di6ixfdbe',
-  api_key: '461286952853283', 
-  api_secret: 'WGQjNFHu4Ty-MOb4VGymCJ9Pros',
+  cloud_name: 'YOUR_CLOUD_NAME',
+  api_key: 'YOUR_API_KEY',
+  api_secret: 'YOUR_API_SECRET',
 });
 
 const storage = multer.memoryStorage();
@@ -83,9 +84,22 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   const profile = await Profile.findById(req.params.id);
   if (!profile) return res.status(404).json({ msg: 'Profile not found' });
-  profile.views += 1; // Increment views
+  profile.views += 1;
   await profile.save();
   res.json(profile);
+});
+
+// Search endpoint
+router.get('/search', async (req, res) => {
+  const { name } = req.query;
+  try {
+    const profiles = await Profile.find({
+      name: { $regex: name, $options: 'i' }, // Case-insensitive search
+    });
+    res.json(profiles);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 module.exports = router;

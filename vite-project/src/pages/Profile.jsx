@@ -1,3 +1,4 @@
+// client/src/pages/Profile.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -47,7 +48,7 @@ function Profile() {
             className="w-32 h-32 rounded-full object-cover border-4 border-neonBlue"
           />
           <div className="flex-1">
-            <h1 className="text-4xl font-bold text-white">{profile.name}</h1>
+            <h1 className="text-4xl neon-heading">{profile.name}</h1>
             <p className="text-gray-400 mt-2">{profile.location || 'No location'}</p>
             <p className="text-gray-300 mt-4">{profile.bio || 'No bio available'}</p>
             <div className="flex space-x-4 mt-4">
@@ -81,7 +82,7 @@ function Profile() {
           </div>
         </div>
         <div className="mt-8">
-          <h2 className="text-2xl font-semibold text-neonPurple mb-4">Projects</h2>
+          <h2 className="text-2xl neon-heading mb-4">Projects</h2>
           {profile.projects.map((project, idx) => (
             <motion.div
               key={idx}
