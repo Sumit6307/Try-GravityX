@@ -1,4 +1,3 @@
-// client/src/pages/EditProfile.jsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -20,7 +19,7 @@ function EditProfile() {
         github: res.data.socialLinks.github || '',
         linkedin: res.data.socialLinks.linkedin || '',
         twitter: res.data.socialLinks.twitter || '',
-        instagram: res.data.socialLinks.instagram || '', // Added Instagram
+        instagram: res.data.socialLinks.instagram || '',
         location: res.data.location || '',
         image: null,
         projects: res.data.projects,
@@ -29,9 +28,7 @@ function EditProfile() {
     fetchProfile();
   }, [id]);
 
-  const handleFileChange = e => {
-    setFormData({ ...formData, image: e.target.files[0] });
-  };
+  const handleFileChange = e => setFormData({ ...formData, image: e.target.files[0] });
 
   const handleProjectChange = (idx, field, value) => {
     const newProjects = [...formData.projects];
@@ -40,7 +37,7 @@ function EditProfile() {
   };
 
   const addProject = () => {
-    setFormData({ ...formData, projects: [...formData.projects, { title: '', description: '', codeSnippet: '' }] });
+    setFormData({ ...formData, projects: [...formData.projects, { title: '', description: '', codeSnippet: '', url: '' }] });
   };
 
   const handleSubmit = async e => {
@@ -54,7 +51,7 @@ function EditProfile() {
       github: formData.github,
       linkedin: formData.linkedin,
       twitter: formData.twitter,
-      instagram: formData.instagram, // Added Instagram
+      instagram: formData.instagram,
     }));
     data.append('location', formData.location);
     data.append('projects', JSON.stringify(formData.projects));
@@ -97,10 +94,11 @@ function EditProfile() {
           className="w-full p-3 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-neonBlue"
         />
         <textarea
-          placeholder="Bio"
+          placeholder="Bio (max 500 characters)"
           value={formData.bio}
           onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
           className="w-full p-3 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-neonBlue"
+          maxLength={500}
         />
         <input
           type="text"
@@ -163,6 +161,13 @@ function EditProfile() {
               placeholder="Code Snippet"
               value={project.codeSnippet}
               onChange={e => handleProjectChange(idx, 'codeSnippet', e.target.value)}
+              className="w-full p-3 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-neonBlue"
+            />
+            <input
+              type="text"
+              placeholder="Project URL (optional)"
+              value={project.url}
+              onChange={e => handleProjectChange(idx, 'url', e.target.value)}
               className="w-full p-3 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-neonBlue"
             />
           </div>

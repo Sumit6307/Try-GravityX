@@ -1,21 +1,27 @@
-// server/routes/profiles.js
 const express = require('express');
 const router = express.Router();
 const Profile = require('../models/Profile');
 const { v4: uuidv4 } = require('uuid');
 const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
+const rateLimit = require('express-rate-limit');
+const mongoose = require('mongoose'); // Add this
 
 cloudinary.config({
-  cloud_name: 'YOUR_CLOUD_NAME',
-  api_key: 'YOUR_API_KEY',
-  api_secret: 'YOUR_API_SECRET',
+  cloud_name: process.env.CLOUDINARY_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-router.post('/add', upload.single('image'), async (req, res) => {
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // 100 requests per IP
+});
+
+router.post('/add', limiter, upload.single('image'), async (req, res) => {
   const { name, bio, skills, socialLinks, location, projects } = req.body;
   try {
     let imageUrl = '';
@@ -42,63 +48,57 @@ router.post('/add', upload.single('image'), async (req, res) => {
     await profile.save();
     res.json({ profile, editToken });
   } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-router.put('/edit/:id', upload.single('image'), async (req, res) => {
-  const { editToken, name, bio, skills, socialLinks, location, projects } = req.body;
-  try {
-    const profile = await Profile.findById(req.params.id);
-    if (!profile) return res.status(404).json({ msg: 'Profile not found' });
-    if (profile.editToken !== editToken) return res.status(403).json({ msg: 'Invalid edit token' });
-
-    if (req.file) {
-      const result = await new Promise((resolve, reject) => {
-        cloudinary.uploader.upload_stream({ resource_type: 'image' }, (error, result) => {
-          if (error) reject(error);
-          resolve(result);
-        }).end(req.file.buffer);
-      });
-      profile.imageUrl = result.secure_url;
-    }
-
-    profile.name = name || profile.name;
-    profile.bio = bio || profile.bio;
-    profile.skills = skills ? skills.split(',').map(s => s.trim()) : profile.skills;
-    profile.socialLinks = socialLinks ? JSON.parse(socialLinks) : profile.socialLinks;
-    profile.location = location || profile.location;
-    profile.projects = projects ? JSON.parse(projects) : profile.projects;
-    await profile.save();
-    res.json(profile);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Add Profile Error:', err.message);
+    res.status(500).json({ error: 'Server error', details: err.message });
   }
 });
 
 router.get('/', async (req, res) => {
-  const profiles = await Profile.find();
-  res.json(profiles);
+  try {
+    const profiles = await Profile.find().sort({ views: -1 }).limit(50);
+    res.json(profiles);
+  } catch (err) {
+    console.error('Get Profiles Error:', err.message);
+    res.status(500).json({ error: 'Server error', details: err.message });
+  }
+});
+
+router.get('/search', async (req, res) => {
+  try {
+    const { q } = req.query;
+    if (!q) return res.status(400).json({ error: 'Search query is required' });
+
+    const profiles = await Profile.find({
+      $or: [
+        { name: { $regex: q, $options: 'i' } },
+        { skills: { $regex: q, $options: 'i' } },
+        { location: { $regex: q, $options: 'i' } },
+      ],
+    }).limit(50);
+
+    res.json(profiles);
+  } catch (err) {
+    console.error('Search Profiles Error:', err.message);
+    res.status(500).json({ error: 'Server error', details: err.message });
+  }
 });
 
 router.get('/:id', async (req, res) => {
-  const profile = await Profile.findById(req.params.id);
-  if (!profile) return res.status(404).json({ msg: 'Profile not found' });
-  profile.views += 1;
-  await profile.save();
-  res.json(profile);
-});
-
-// Search endpoint
-router.get('/search', async (req, res) => {
-  const { name } = req.query;
   try {
-    const profiles = await Profile.find({
-      name: { $regex: name, $options: 'i' }, // Case-insensitive search
-    });
-    res.json(profiles);
+    // Check if the ID is a valid ObjectId
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid profile ID' });
+    }
+
+    const profile = await Profile.findById(req.params.id);
+    if (!profile) return res.status(404).json({ error: 'Profile not found' });
+    
+    profile.views += 1;
+    await profile.save();
+    res.json(profile);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Get Profile Error:', err.message);
+    res.status(500).json({ error: 'Server error', details: err.message });
   }
 });
 

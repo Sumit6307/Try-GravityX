@@ -1,4 +1,3 @@
-// client/src/pages/AddProfile.jsx
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -12,17 +11,15 @@ function AddProfile() {
     github: '',
     linkedin: '',
     twitter: '',
-    instagram: '', // Added Instagram
+    instagram: '',
     location: '',
     image: null,
-    projects: [{ title: '', description: '', codeSnippet: '' }],
+    projects: [{ title: '', description: '', codeSnippet: '', url: '' }],
   });
   const [editToken, setEditToken] = useState(null);
   const navigate = useNavigate();
 
-  const handleFileChange = e => {
-    setFormData({ ...formData, image: e.target.files[0] });
-  };
+  const handleFileChange = e => setFormData({ ...formData, image: e.target.files[0] });
 
   const handleProjectChange = (idx, field, value) => {
     const newProjects = [...formData.projects];
@@ -31,7 +28,7 @@ function AddProfile() {
   };
 
   const addProject = () => {
-    setFormData({ ...formData, projects: [...formData.projects, { title: '', description: '', codeSnippet: '' }] });
+    setFormData({ ...formData, projects: [...formData.projects, { title: '', description: '', codeSnippet: '', url: '' }] });
   };
 
   const handleSubmit = async e => {
@@ -44,7 +41,7 @@ function AddProfile() {
       github: formData.github,
       linkedin: formData.linkedin,
       twitter: formData.twitter,
-      instagram: formData.instagram, // Added Instagram
+      instagram: formData.instagram,
     }));
     data.append('location', formData.location);
     data.append('projects', JSON.stringify(formData.projects));
@@ -87,10 +84,11 @@ function AddProfile() {
           className="w-full p-3 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-neonBlue"
         />
         <textarea
-          placeholder="Bio"
+          placeholder="Bio (max 500 characters)"
           value={formData.bio}
           onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
           className="w-full p-3 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-neonBlue"
+          maxLength={500}
         />
         <input
           type="text"
@@ -153,6 +151,13 @@ function AddProfile() {
               placeholder="Code Snippet"
               value={project.codeSnippet}
               onChange={e => handleProjectChange(idx, 'codeSnippet', e.target.value)}
+              className="w-full p-3 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-neonBlue"
+            />
+            <input
+              type="text"
+              placeholder="Project URL (optional)"
+              value={project.url}
+              onChange={e => handleProjectChange(idx, 'url', e.target.value)}
               className="w-full p-3 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-neonBlue"
             />
           </div>

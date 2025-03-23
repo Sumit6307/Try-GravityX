@@ -1,9 +1,8 @@
-// client/src/pages/Profile.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { FaGithub, FaLinkedin, FaTwitter } from 'react-icons/fa';
+import { FaGithub, FaLinkedin, FaTwitter, FaInstagram } from 'react-icons/fa';
 
 function Profile() {
   const { id } = useParams();
@@ -67,6 +66,11 @@ function Profile() {
                   <FaTwitter className="text-white hover:text-neonBlue" size={24} />
                 </a>
               )}
+              {profile.socialLinks.instagram && (
+                <a href={profile.socialLinks.instagram} target="_blank" rel="noopener noreferrer">
+                  <FaInstagram className="text-white hover:text-neonBlue" size={24} />
+                </a>
+              )}
             </div>
             <p className="text-sm text-gray-500 mt-2">Profile Views: {profile.views}</p>
             {editToken && (
@@ -93,6 +97,11 @@ function Profile() {
             >
               <h3 className="text-xl font-semibold text-white">{project.title}</h3>
               <p className="text-gray-300 mt-2">{project.description}</p>
+              {project.url && (
+                <a href={project.url} target="_blank" rel="noopener noreferrer" className="text-neonBlue hover:underline mt-2 block">
+                  View Project
+                </a>
+              )}
               <pre className="bg-gray-800 text-gray-200 p-4 rounded mt-2 overflow-x-auto">{project.codeSnippet}</pre>
             </motion.div>
           ))}

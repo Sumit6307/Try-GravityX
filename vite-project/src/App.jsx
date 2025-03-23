@@ -1,16 +1,20 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
+import Footer from './components/Footer';
+import ThemeToggle from './components/ThemeToggle';
 import Home from './pages/Home';
 import Profile from './pages/Profile';
 import AddProfile from './pages/AddProfile';
 import EditProfile from './pages/EditProfile';
-import Footer from './components/Footer';
 
 function App() {
+  const [theme, setTheme] = useState('dark');
+
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-900 to-black">
+    <div className={`min-h-screen flex flex-col ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-black'}`}>
       <Navbar />
+      <ThemeToggle theme={theme} setTheme={setTheme} />
       <div className="flex-1">
         <Routes>
           <Route path="/" element={<Home />} />

@@ -1,16 +1,21 @@
 const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
+const connectDB = require('./config/db');
 const profileRoutes = require('./routes/profiles');
+const cors = require('cors'); // Add CORS
+require('dotenv').config();
 
 const app = express();
-app.use(cors());
+
+// Connect to MongoDB
+connectDB();
+
+// Middleware
+app.use(cors({ origin: 'http://localhost:5173' })); // Allow requests from Vite’s default port
 app.use(express.json());
 app.use('/api/profiles', profileRoutes);
 
-mongoose.connect('mongodb://localhost/gravityx', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-}).then(() => console.log('MongoDB connected'));
+// Basic route for testing
+app.get('/', (req, res) => res.send('Backend is running'));
 
-app.listen(5000, () => console.log('Server running on port 5000'));
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

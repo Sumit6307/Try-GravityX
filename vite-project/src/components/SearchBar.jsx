@@ -4,24 +4,32 @@ import axios from 'axios';
 function SearchBar({ setProfiles }) {
   const [query, setQuery] = useState('');
 
-  const handleSearch = async () => {
-    const res = await axios.get(`http://localhost:5000/api/profiles/search?query=${query}`);
-    setProfiles(res.data);
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await axios.get(`http://localhost:5000/api/profiles/search?q=${query}`);
+      setProfiles(res.data);
+    } catch (err) {
+      console.error('Search Error:', err);
+    }
   };
 
   return (
-    <div className="my-4 flex justify-center">
+    <form onSubmit={handleSearch} className="flex justify-center">
       <input
         type="text"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        className="p-2 rounded-l-md bg-gray-800 text-white border border-gray-700 focus:outline-none w-1/3"
-        placeholder="Search user by name"
+        placeholder="Search developers by name, skill, or location..."
+        className="w-full max-w-md p-3 rounded-l bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-neonBlue"
       />
-      <button onClick={handleSearch} className="p-2 bg-blue-600 text-white rounded-r-md hover:bg-blue-700">
+      <button
+        type="submit"
+        className="shine-button text-white px-4 py-3 rounded-r"
+      >
         Search
       </button>
-    </div>
+    </form>
   );
 }
 
