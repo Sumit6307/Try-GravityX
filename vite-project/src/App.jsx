@@ -7,6 +7,7 @@ import Home from './pages/Home';
 import Profile from './pages/Profile';
 import AddProfile from './pages/AddProfile';
 import EditProfile from './pages/EditProfile';
+import Paradise from './pages/Paradise';
 
 function App() {
   const [theme, setTheme] = useState('dark');
@@ -21,6 +22,7 @@ function App() {
           <Route path="/profile/:id" element={<Profile />} />
           <Route path="/add-profile" element={<AddProfile />} />
           <Route path="/edit-profile/:id" element={<EditProfile />} />
+          <Route path="/paradise" element={<Paradise />} /> 
         </Routes>
       </div>
       <Footer />

@@ -3,9 +3,9 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import ProfileCard from '../components/ProfileCard';
-import ProfileModal from '../components/ProfileModal'; // Import ProfileModal
+import ProfileModal from '../components/ProfileModal';
 import SearchBar from '../components/SearchBar';
-import { FaRocket, FaRedo, FaCode } from 'react-icons/fa';
+import { FaRocket, FaRedo, FaCode, FaGlobe } from 'react-icons/fa';
 import { LazyLoadComponent } from 'react-lazy-load-image-component';
 
 // Animation variants
@@ -52,16 +52,15 @@ function Home() {
   const [profiles, setProfiles] = useState([]);
   const [trendingSkills, setTrendingSkills] = useState([]);
   const [error, setError] = useState('');
-  const [selectedProfileId, setSelectedProfileId] = useState(null); // State for modal
+  const [selectedProfileId, setSelectedProfileId] = useState(null);
 
   const fetchProfiles = async () => {
     try {
       setError('');
       const res = await axios.get('http://localhost:5000/api/profiles');
-      console.log('Fetched profiles:', res.data); // Debug: Log profiles
+      console.log('Fetched profiles:', res.data);
       setProfiles(res.data);
 
-      // Count skills across all profiles (case-insensitive)
       const skillCount = {};
       res.data.forEach((profile) =>
         profile.skills.forEach((skill) => {
@@ -70,7 +69,6 @@ function Home() {
         })
       );
 
-      // Sort by frequency and take top 10 unique skills, convert to uppercase
       const topSkills = Object.entries(skillCount)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 10)
@@ -87,19 +85,45 @@ function Home() {
   }, []);
 
   const handleOpenProfile = (id) => {
-    console.log('Opening profile with ID:', id); // Debug: Confirm click
+    console.log('Opening profile with ID:', id);
     setSelectedProfileId(id);
   };
 
   const handleCloseProfile = () => {
-    console.log('Closing profile modal'); // Debug: Confirm close
+    console.log('Closing profile modal');
     setSelectedProfileId(null);
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 pt-20 pb-12 overflow-hidden relative">
+      {/* Inline CSS */}
+      <style>
+        {`
+          .neon-heading {
+            color: #fff;
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+          }
+          .shine-button {
+            background: linear-gradient(90deg, #00D4FF, #D81BFF);
+          }
+          .neon-blue { color: #00D4FF; }
+          .neon-purple { color: #D81BFF; }
+        `}
+      </style>
+
       {/* Cosmic Background Effect */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,212,255,0.1)_0%,transparent_70%)] -z-10" />
+
+      {/* GravityX Paradise Button (Top-Left) */}
+      <Link to="/paradise">
+        <motion.button
+          className="shine-button mt-10 text-white px-6 py-3 rounded-full text-lg font-semibold inline-flex items-center absolute top-4 left-4 z-10"
+          whileHover={{ scale: 1.05, boxShadow: '0 0 20px rgba(0, 212, 255, 0.7)' }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <FaGlobe className="mr-2" /> GravityX Paradise
+        </motion.button>
+      </Link>
 
       {/* Hero Section */}
       <motion.section

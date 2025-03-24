@@ -265,3 +265,16 @@ function Home() {
 }
 
 export default Home;
+
+ <Link to="/">
+        <motion.button
+          className="fixed top-4 mt-30 left-4 bg-gradient-to-r from-neonBlue to-neonPurple text-white px-6 py-3 rounded-full text-lg font-semibold flex items-center shadow-lg hover:shadow-[0_0_20px_rgba(0,212,255,0.7)] z-20"
+          whileHover={{ scale: 1.1, rotate: 5 }}
+          whileTap={{ scale: 0.95 }}
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <FaGlobe className="mr-2" /> GravityX Paradise
+        </motion.button>
+      </Link>
