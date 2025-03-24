@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import ProfileCard from '../components/ProfileCard';
+import ProfileModal from '../components/ProfileModal'; // Import ProfileModal
 import SearchBar from '../components/SearchBar';
 import { FaRocket, FaRedo, FaCode } from 'react-icons/fa';
 import { LazyLoadComponent } from 'react-lazy-load-image-component';
@@ -15,7 +16,7 @@ const heroVariants = {
 
 const skillVariants = {
   animate: {
-    x: ['0%', '-50%'], // Adjusted for unique skills
+    x: ['0%', '-50%'],
     transition: {
       x: { repeat: Infinity, repeatType: 'loop', duration: 15, ease: 'linear' },
     },
@@ -51,27 +52,29 @@ function Home() {
   const [profiles, setProfiles] = useState([]);
   const [trendingSkills, setTrendingSkills] = useState([]);
   const [error, setError] = useState('');
+  const [selectedProfileId, setSelectedProfileId] = useState(null); // State for modal
 
   const fetchProfiles = async () => {
     try {
       setError('');
       const res = await axios.get('http://localhost:5000/api/profiles');
+      console.log('Fetched profiles:', res.data); // Debug: Log profiles
       setProfiles(res.data);
 
       // Count skills across all profiles (case-insensitive)
       const skillCount = {};
       res.data.forEach((profile) =>
         profile.skills.forEach((skill) => {
-          const normalizedSkill = skill.toLowerCase(); // Normalize to lowercase for counting
+          const normalizedSkill = skill.toLowerCase();
           skillCount[normalizedSkill] = (skillCount[normalizedSkill] || 0) + 1;
         })
       );
 
       // Sort by frequency and take top 10 unique skills, convert to uppercase
       const topSkills = Object.entries(skillCount)
-        .sort((a, b) => b[1] - a[1]) // Sort by count descending
-        .slice(0, 10) // Take top 10
-        .map(([skill]) => skill.toUpperCase()); // Convert to uppercase
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10)
+        .map(([skill]) => skill.toUpperCase());
       setTrendingSkills(topSkills);
     } catch (err) {
       console.error('Fetch Profiles Error:', err);
@@ -82,6 +85,16 @@ function Home() {
   useEffect(() => {
     fetchProfiles();
   }, []);
+
+  const handleOpenProfile = (id) => {
+    console.log('Opening profile with ID:', id); // Debug: Confirm click
+    setSelectedProfileId(id);
+  };
+
+  const handleCloseProfile = () => {
+    console.log('Closing profile modal'); // Debug: Confirm close
+    setSelectedProfileId(null);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 pt-20 pb-12 overflow-hidden relative">
@@ -160,11 +173,9 @@ function Home() {
             whileHover="hover"
             className="relative bg-gray-900/70 backdrop-blur-lg p-8 rounded-xl border border-neonBlue/40 shadow-[0_0_30px_rgba(0,212,255,0.3)] overflow-hidden perspective-1000 transform-style-3d"
           >
-            {/* Holographic Overlay */}
             <div className="absolute inset-0 bg-gradient-to-br from-neonBlue/10 via-neonPurple/10 to-transparent opacity-50 animate-pulse -z-10" />
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-neonBlue to-neonPurple" />
             <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-neonBlue to-neonPurple" />
-
             <div className="flex items-center justify-center mb-6">
               <FaCode className="text-neonBlue mr-3" size={28} />
               <span className="text-xl font-semibold text-neonBlue drop-shadow-[0_0_8px_rgba(0,212,255,0.4)]">
@@ -172,7 +183,7 @@ function Home() {
               </span>
             </div>
             <motion.div
-              className="flex space-x-8 whitespace-nowrap justify-center" // Centered for balance with 10 skills
+              className="flex space-x-8 whitespace-nowrap justify-center"
               variants={skillVariants}
               animate="animate"
             >
@@ -187,7 +198,6 @@ function Home() {
                 </motion.span>
               ))}
             </motion.div>
-            {/* Gradient overlays for fade effect */}
             <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-gray-900/80 to-transparent pointer-events-none" />
             <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-gray-900/80 to-transparent pointer-events-none" />
           </motion.div>
@@ -206,7 +216,7 @@ function Home() {
           >
             {profiles.map((profile) => (
               <LazyLoadComponent key={profile._id} threshold={100}>
-                <ProfileCard profile={profile} />
+                <ProfileCard profile={profile} onOpenProfile={handleOpenProfile} />
               </LazyLoadComponent>
             ))}
           </motion.div>
@@ -214,6 +224,13 @@ function Home() {
           <p className="text-center text-gray-400 text-lg">No profiles available yet. Be the first!</p>
         )}
       </section>
+
+      {/* Profile Modal */}
+      <AnimatePresence>
+        {selectedProfileId && (
+          <ProfileModal id={selectedProfileId} onClose={handleCloseProfile} />
+        )}
+      </AnimatePresence>
 
       {/* Decorative Glow */}
       <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-neonBlue/50 via-neonPurple/50 to-transparent" />
