@@ -1,17 +1,19 @@
-import React from 'react';
+// src/components/ProfileCard.jsx
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 import { motion } from 'framer-motion';
-import { FaInstagram, FaTwitter, FaLinkedin, FaMapMarkerAlt, FaCode } from 'react-icons/fa';
+import { FaInstagram, FaTwitter, FaLinkedin, FaMapMarkerAlt, FaCode, FaShareAlt, FaWhatsapp, FaFacebook, FaLink, FaEdit } from 'react-icons/fa';
 
 // Animation variants for skills
 const skillVariants = {
   animate: {
-    x: ['100%', '-100%'], // Moves skills from right to left
+    x: ['100%', '-100%'],
     transition: {
       x: {
         repeat: Infinity,
         repeatType: 'loop',
-        duration: 12, // Slightly slower for a smoother effect
+        duration: 12,
         ease: 'linear',
       },
     },
@@ -27,7 +29,97 @@ const cardVariants = {
   },
 };
 
+// Button animation
+const buttonVariants = {
+  hover: { scale: 1.05, boxShadow: '0 0 20px rgba(0, 212, 255, 0.5)', transition: { duration: 0.3 } },
+  tap: { scale: 0.95 },
+};
+
+// Share menu animation
+const shareMenuVariants = {
+  hidden: { opacity: 0, scale: 0.8, y: 10 },
+  visible: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.2 } },
+};
+
 function ProfileCard({ profile }) {
+  const [isShareMenuOpen, setIsShareMenuOpen] = useState(false);
+  const [loggedInUserId, setLoggedInUserId] = useState(null);
+
+  // Fetch logged-in user’s ID
+  useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      axios
+        .get('http://localhost:5000/api/profiles/me', {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .then((res) => setLoggedInUserId(res.data.userId))
+        .catch((err) => console.error('Fetch User Error:', err));
+    }
+  }, []);
+
+  // Generate profile URL
+  const profileUrl = `${window.location.origin}/profile/${profile._id}`;
+  const shareText = `Check out ${profile.name}'s profile on GravityX!`;
+
+  // Handle native Web Share API
+  const handleNativeShare = () => {
+    if (navigator.share) {
+      navigator
+        .share({
+          title: `${profile.name}'s GravityX Profile`,
+          text: shareText,
+          url: profileUrl,
+        })
+        .then(() => setIsShareMenuOpen(false))
+        .catch((err) => console.error('Share failed:', err));
+    } else {
+      setIsShareMenuOpen(!isShareMenuOpen);
+    }
+  };
+
+  // Custom share options
+  const shareOptions = [
+    {
+      name: 'WhatsApp',
+      icon: <FaWhatsapp />,
+      url: `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText + ' ' + profileUrl)}`,
+      color: '#25D366',
+    },
+    {
+      name: 'Facebook',
+      icon: <FaFacebook />,
+      url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(profileUrl)}`,
+      color: '#1877F2',
+    },
+    {
+      name: 'Twitter',
+      icon: <FaTwitter />,
+      url: `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(profileUrl)}`,
+      color: '#1DA1F2',
+    },
+    {
+      name: 'LinkedIn',
+      icon: <FaLinkedin />,
+      url: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(profileUrl)}`,
+      color: '#0A66C2',
+    },
+    {
+      name: 'Copy Link',
+      icon: <FaLink />,
+      action: () => {
+        navigator.clipboard
+          .writeText(profileUrl)
+          .then(() => {
+            setIsShareMenuOpen(false);
+            alert('Profile URL copied to clipboard!');
+          })
+          .catch((err) => console.error('Failed to copy:', err));
+      },
+      color: '#00D4FF',
+    },
+  ];
+
   return (
     <motion.div
       variants={cardVariants}
@@ -86,7 +178,6 @@ function ProfileCard({ profile }) {
                     {skill}
                   </motion.span>
                 ))}
-                {/* Duplicate for seamless looping */}
                 {profile.skills.map((skill, idx) => (
                   <motion.span
                     key={`duplicate-${idx}`}
@@ -101,7 +192,6 @@ function ProfileCard({ profile }) {
               <span className="text-gray-400 text-sm">No skills listed</span>
             )}
           </motion.div>
-          {/* Gradient overlays for fade effect */}
           <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-gray-800/80 to-transparent pointer-events-none" />
           <div className="absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-gray-800/80 to-transparent pointer-events-none" />
         </div>
@@ -153,19 +243,77 @@ function ProfileCard({ profile }) {
         )}
       </div>
 
-      {/* Connect Button */}
-      <motion.button
-        whileHover={{ scale: 1.05, boxShadow: '0 0 20px rgba(0, 212, 255, 0.5)' }}
-        whileTap={{ scale: 0.95 }}
-        className="mt-6 w-full bg-gradient-to-r from-cyan-500 to-purple-500 text-white py-3 rounded-lg font-semibold text-lg"
-      >
-        Connect
-      </motion.button>
-
-      {/* Views Badge */}
-      <div className="absolute top-4 right-4 bg-cyan-500/20 text-cyan-300 text-xs px-3 py-1 rounded-full border border-cyan-400/30">
-        {profile.views} Views
+      {/* Edit Button (only for owner) and Connect Button */}
+      <div className="mt-6 flex flex-col space-y-4">
+        {loggedInUserId === profile._id && (
+          <motion.div
+            variants={buttonVariants}
+            whileHover="hover"
+            whileTap="tap"
+            className="w-full text-center"
+          >
+            <Link
+              to={`/edit-profile/${profile._id}`}
+              className="bg-gradient-to-r from-purple-500 to-cyan-500 text-white py-3 px-6 rounded-lg font-semibold text-lg inline-flex items-center justify-center"
+            >
+              <FaEdit className="mr-2" /> Edit Profile
+            </Link>
+          </motion.div>
+        )}
+        <motion.a
+          href={profile.socialLinks.linkedin || '#'}
+          target="_blank"
+          rel="noopener noreferrer"
+          variants={buttonVariants}
+          whileHover="hover"
+          whileTap="tap"
+          className="w-full bg-gradient-to-r from-cyan-500 to-purple-500 text-white py-3 rounded-lg font-semibold text-lg text-center block"
+        >
+          Connect
+        </motion.a>
       </div>
+
+      {/* Share Button and Views Badge */}
+      <div className="absolute top-4 right-4 flex items-center space-x-3">
+        <motion.button
+          onClick={handleNativeShare}
+          variants={buttonVariants}
+          whileHover="hover"
+          whileTap="tap"
+          className="bg-cyan-500/20 text-cyan-300 p-2 rounded-full border border-cyan-400/30"
+          title="Share Profile"
+        >
+          <FaShareAlt size={14} />
+        </motion.button>
+        <div className="bg-cyan-500/20 text-cyan-300 text-xs px-3 py-1 rounded-full border border-cyan-400/30">
+          {profile.views} Views
+        </div>
+      </div>
+
+      {/* Custom Share Menu */}
+      {isShareMenuOpen && (
+        <motion.div
+          variants={shareMenuVariants}
+          initial="hidden"
+          animate="visible"
+          className="absolute top-12 right-4 bg-gray-900/90 backdrop-blur-md p-3 rounded-lg border border-cyan-500/30 shadow-[0_0_15px_rgba(0,212,255,0.3)] z-10"
+        >
+          {shareOptions.map((option, idx) => (
+            <motion.a
+              key={idx}
+              href={option.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={option.action ? (e) => { e.preventDefault(); option.action(); } : undefined}
+              className="flex items-center space-x-2 text-white py-2 px-3 rounded-md hover:bg-cyan-500/20"
+              whileHover={{ scale: 1.05, backgroundColor: `${option.color}20` }}
+            >
+              <span style={{ color: option.color }}>{option.icon}</span>
+              <span>{option.name}</span>
+            </motion.a>
+          ))}
+        </motion.div>
+      )}
     </motion.div>
   );
 }

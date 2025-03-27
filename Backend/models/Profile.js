@@ -2,8 +2,8 @@
 const mongoose = require('mongoose');
 
 const profileSchema = new mongoose.Schema({
-  name: { type: String, required: true, index: true },
-  password: { type: String, required: true }, // Added password field
+  name: { type: String, required: true, unique: true, index: true }, // Made name unique
+  password: { type: String, required: true }, // Hashed password
   bio: { type: String, maxlength: 500 },
   skills: [{ type: String, index: true }],
   socialLinks: {
@@ -20,7 +20,6 @@ const profileSchema = new mongoose.Schema({
     codeSnippet: String,
     url: String,
   }],
-  editToken: { type: String, required: true, unique: true },
   views: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
