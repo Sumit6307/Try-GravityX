@@ -1,7 +1,9 @@
+// models/Profile.js
 const mongoose = require('mongoose');
 
 const profileSchema = new mongoose.Schema({
   name: { type: String, required: true, index: true },
+  password: { type: String, required: true }, // Added password field
   bio: { type: String, maxlength: 500 },
   skills: [{ type: String, index: true }],
   socialLinks: {

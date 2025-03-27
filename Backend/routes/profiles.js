@@ -1,3 +1,4 @@
+// routes/profiles.js
 const express = require('express');
 const router = express.Router();
 const Profile = require('../models/Profile');
@@ -5,7 +6,8 @@ const { v4: uuidv4 } = require('uuid');
 const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
 const rateLimit = require('express-rate-limit');
-const mongoose = require('mongoose'); // Add this
+const mongoose = require('mongoose');
+const bcrypt = require('bcrypt'); // Added bcrypt
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_NAME,
@@ -21,9 +23,13 @@ const limiter = rateLimit({
   max: 100, // 100 requests per IP
 });
 
+// Add Profile
 router.post('/add', limiter, upload.single('image'), async (req, res) => {
-  const { name, bio, skills, socialLinks, location, projects } = req.body;
+  const { name, password, bio, skills, socialLinks, location, projects } = req.body;
   try {
+    if (!password) return res.status(400).json({ error: 'Password is required' });
+
+    const hashedPassword = await bcrypt.hash(password, 10); // Hash the password
     let imageUrl = '';
     if (req.file) {
       const result = await new Promise((resolve, reject) => {
@@ -37,11 +43,12 @@ router.post('/add', limiter, upload.single('image'), async (req, res) => {
     const editToken = uuidv4();
     const profile = new Profile({
       name,
+      password: hashedPassword, // Store hashed password
       bio,
       skills: skills.split(',').map(s => s.trim()),
       socialLinks: JSON.parse(socialLinks),
       location,
-      imageUrl,
+      imageUrl: imageUrl || 'https://via.placeholder.com/150', // Default image if none uploaded
       projects: JSON.parse(projects),
       editToken,
     });
@@ -53,11 +60,29 @@ router.post('/add', limiter, upload.single('image'), async (req, res) => {
   }
 });
 
+// Login
+router.post('/login', async (req, res) => {
+  const { name, password } = req.body;
+  try {
+    if (!name || !password) return res.status(400).json({ error: 'Name and password are required' });
 
+    const profile = await Profile.findOne({ name });
+    if (!profile) return res.status(401).json({ error: 'Invalid name or password' });
 
+    const isMatch = await bcrypt.compare(password, profile.password);
+    if (!isMatch) return res.status(401).json({ error: 'Invalid name or password' });
+
+    res.json({ profile, editToken: profile.editToken });
+  } catch (err) {
+    console.error('Login Error:', err.message);
+    res.status(500).json({ error: 'Server error', details: err.message });
+  }
+});
+
+// Get All Profiles
 router.get('/', async (req, res) => {
   try {
-    const profiles = await Profile.find().sort({ views: -1 }).limit(50);
+    const profiles = await Profile.find().select('-password').sort({ views: -1 }).limit(50); // Exclude password
     res.json(profiles);
   } catch (err) {
     console.error('Get Profiles Error:', err.message);
@@ -65,6 +90,7 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Search Profiles
 router.get('/search', async (req, res) => {
   try {
     const { q } = req.query;
@@ -76,7 +102,7 @@ router.get('/search', async (req, res) => {
         { skills: { $regex: q, $options: 'i' } },
         { location: { $regex: q, $options: 'i' } },
       ],
-    }).limit(50);
+    }).select('-password').limit(50); // Exclude password
 
     res.json(profiles);
   } catch (err) {
@@ -85,6 +111,7 @@ router.get('/search', async (req, res) => {
   }
 });
 
+// Edit Profile
 router.put('/edit/:id', limiter, upload.single('image'), async (req, res) => {
   try {
     const { id } = req.params;
@@ -126,16 +153,16 @@ router.put('/edit/:id', limiter, upload.single('image'), async (req, res) => {
   }
 });
 
+// Get Single Profile
 router.get('/:id', async (req, res) => {
   try {
-    // Check if the ID is a valid ObjectId
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).json({ error: 'Invalid profile ID' });
     }
 
-    const profile = await Profile.findById(req.params.id);
+    const profile = await Profile.findById(req.params.id).select('-password'); // Exclude password
     if (!profile) return res.status(404).json({ error: 'Profile not found' });
-    
+
     profile.views += 1;
     await profile.save();
     res.json(profile);
