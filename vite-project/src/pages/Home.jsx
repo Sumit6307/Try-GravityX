@@ -7,7 +7,7 @@ import ProfileCard from '../components/ProfileCard';
 import ProfileModal from '../components/ProfileModal';
 import SearchBar from '../components/SearchBar';
 import Navbar from '../components/Navbar';
-import { FaRocket, FaRedo, FaCode, FaBolt } from 'react-icons/fa';
+import { FaRocket, FaRedo, FaCode, FaBolt, FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 import { LazyLoadComponent } from 'react-lazy-load-image-component';
 
 // Animation variants
@@ -20,12 +20,18 @@ const premiumButtonVariants = {
   hover: { scale: 1.05, boxShadow: '0 0 25px rgba(192, 192, 192, 0.8), 0 0 10px rgba(255, 215, 0, 0.5)', transition: { duration: 0.3 } },
   tap: { scale: 0.98 },
 };
+const navButtonVariants = {
+  hover: { scale: 1.1, boxShadow: '0 0 20px rgba(0, 212, 255, 0.8)', transition: { duration: 0.3 } },
+  tap: { scale: 0.95 },
+};
 
 function Home() {
   const [profiles, setProfiles] = useState([]);
   const [trendingSkills, setTrendingSkills] = useState([]);
   const [error, setError] = useState('');
   const [selectedProfileId, setSelectedProfileId] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const profilesPerPage = 18;
 
   const fetchProfiles = async () => {
     try {
@@ -46,6 +52,20 @@ function Home() {
 
   const handleOpenProfile = (id) => { setSelectedProfileId(id); };
   const handleCloseProfile = () => { setSelectedProfileId(null); };
+
+  // Pagination Logic
+  const indexOfLastProfile = currentPage * profilesPerPage;
+  const indexOfFirstProfile = indexOfLastProfile - profilesPerPage;
+  const currentProfiles = profiles.slice(indexOfFirstProfile, indexOfLastProfile);
+  const totalPages = Math.ceil(profiles.length / profilesPerPage);
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 overflow-hidden relative">
@@ -83,9 +103,43 @@ function Home() {
             position: relative;
             z-index: 1;
           }
+          .nav-button {
+            background: linear-gradient(45deg, #00D4FF, #9333EA);
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            position: relative;
+            overflow: hidden;
+          }
+          .nav-button::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.4) 0%, transparent 70%);
+            animation: pulse-glow 3s infinite ease-in-out;
+            z-index: 0;
+          }
+          .nav-button span {
+            position: relative;
+            z-index: 1;
+          }
           @keyframes metallic-shine {
             0% { transform: translateX(-100%) translateY(-100%); }
             100% { transform: translateX(100%) translateY(100%); }
+          }
+          @keyframes pulse-glow {
+            0% { transform: scale(0.8); opacity: 0; }
+            50% { transform: scale(1.2); opacity: 0.5; }
+            100% { transform: scale(0.8); opacity: 0; }
           }
         `}</style>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,212,255,0.1)_0%,transparent_70%)] -z-10" />
@@ -100,7 +154,7 @@ function Home() {
           <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black opacity-50 -z-10" />
           
           {/* Premium Button in Upper Left */}
-          <div className="absolute left-6 ">
+          <div className="absolute left-6 mt-[30px]">
             <Link to="/paradise">
               <motion.button
                 className="premium-button px-6 py-3 text-lg inline-flex items-center"
@@ -206,18 +260,48 @@ function Home() {
         <section className="container mx-auto py-12 px-4">
           <h2 className="text-4xl neon-heading mb-8 text-center">Explore Developers</h2>
           {profiles.length > 0 ? (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5 }}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-            >
-              {profiles.map((profile) => (
-                <LazyLoadComponent key={profile._id} threshold={100}>
-                  <ProfileCard profile={profile} onOpenProfile={handleOpenProfile} />
-                </LazyLoadComponent>
-              ))}
-            </motion.div>
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5 }}
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+              >
+                {currentProfiles.map((profile) => (
+                  <LazyLoadComponent key={profile._id} threshold={100}>
+                    <ProfileCard profile={profile} onOpenProfile={handleOpenProfile} />
+                  </LazyLoadComponent>
+                ))}
+              </motion.div>
+              {/* Pagination Buttons */}
+              <div className="flex justify-center gap-6 mt-10">
+                <motion.button
+                  className="nav-button"
+                  onClick={handlePrevPage}
+                  disabled={currentPage === 1}
+                  variants={navButtonVariants}
+                  whileHover="hover"
+                  whileTap="tap"
+                  style={{ opacity: currentPage === 1 ? 0.5 : 1, cursor: currentPage === 1 ? 'not-allowed' : 'pointer' }}
+                >
+                  <span><FaArrowLeft /></span>
+                </motion.button>
+                <motion.button
+                  className="nav-button"
+                  onClick={handleNextPage}
+                  disabled={currentPage === totalPages}
+                  variants={navButtonVariants}
+                  whileHover="hover"
+                  whileTap="tap"
+                  style={{ opacity: currentPage === totalPages ? 0.5 : 1, cursor: currentPage === totalPages ? 'not-allowed' : 'pointer' }}
+                >
+                  <span><FaArrowRight /></span>
+                </motion.button>
+              </div>
+              <p className="text-center text-gray-400 mt-4">
+                Page {currentPage} of {totalPages}
+              </p>
+            </>
           ) : (
             <p className="text-center text-gray-400 text-lg">No profiles available yet. Be the first!</p>
           )}
