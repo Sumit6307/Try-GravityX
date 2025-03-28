@@ -13,74 +13,47 @@ function EditProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [formData, setFormData] = useState(null);
-  const [userId, setUserId] = useState(null);
-  const [isOwner, setIsOwner] = useState(false);
   const [bioLength, setBioLength] = useState(0);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const authToken = localStorage.getItem('authToken');
-
   useEffect(() => {
-    const fetchProfileAndUser = async () => {
+    const fetchProfile = async () => {
       try {
-        if (!authToken) {
-          setError('Please log in to edit your profile.');
+        const credentials = JSON.parse(localStorage.getItem(`editCredentials_${id}`));
+        if (!credentials || !credentials.name || !credentials.password) {
+          setError('Please authenticate from the profile page first.');
           setLoading(false);
           return;
         }
 
-        console.log('Fetching profile for ID:', id);
         const profileRes = await axios.get(`http://localhost:5000/api/profiles/${id}`);
         const profile = profileRes.data;
-        console.log('Profile data:', profile);
 
-        console.log('Fetching current user with token:', authToken);
-        const userRes = await axios.get('http://localhost:5000/api/profiles/me', {
-          headers: { Authorization: `Bearer ${authToken}` },
+        setFormData({
+          name: profile.name,
+          bio: profile.bio || '',
+          skills: profile.skills.join(', '),
+          github: profile.socialLinks.github || '',
+          linkedin: profile.socialLinks.linkedin || '',
+          twitter: profile.socialLinks.twitter || '',
+          instagram: profile.socialLinks.instagram || '',
+          location: profile.location || '',
+          image: null,
+          projects: profile.projects || [{ title: '', description: '', codeSnippet: '', url: '' }],
+          password: credentials.password, // Store password for submission
         });
-        const currentUserId = userRes.data.userId;
-        console.log('Current user ID:', currentUserId);
-
-        setUserId(currentUserId);
-        const ownerCheck = currentUserId === profile._id.toString();
-        setIsOwner(ownerCheck);
-        console.log('Is owner?', ownerCheck);
-
-        if (ownerCheck) {
-          setFormData({
-            name: profile.name,
-            bio: profile.bio || '',
-            skills: profile.skills.join(', '),
-            github: profile.socialLinks.github || '',
-            linkedin: profile.socialLinks.linkedin || '',
-            twitter: profile.socialLinks.twitter || '',
-            instagram: profile.socialLinks.instagram || '',
-            location: profile.location || '',
-            image: null,
-            projects: profile.projects || [{ title: '', description: '', codeSnippet: '', url: '' }],
-          });
-          setBioLength(profile.bio?.length || 0);
-        } else {
-          setError('You are not authorized to edit this profile.');
-        }
+        setBioLength(profile.bio?.length || 0);
       } catch (err) {
         console.error('Fetch Error:', err.response || err.message);
-        if (err.response?.status === 401) {
-          setError('Session expired. Redirecting to login...');
-          localStorage.removeItem('authToken');
-          setTimeout(() => navigate('/login'), 2000);
-        } else {
-          setError('Failed to load profile data. Check console for details.');
-        }
+        setError('Failed to load profile data. Please try again.');
       } finally {
         setLoading(false);
       }
     };
-
-    fetchProfileAndUser();
-  }, [id, authToken, navigate]);
+    fetchProfile();
+  }, [id]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -107,13 +80,9 @@ function EditProfile() {
     setError('');
     setSuccess(false);
 
-    if (!isOwner) {
-      setError('You cannot edit this profile.');
-      return;
-    }
-
     const data = new FormData();
     data.append('name', formData.name);
+    data.append('password', formData.password); // Use stored password
     data.append('bio', formData.bio);
     data.append('skills', formData.skills);
     data.append('socialLinks', JSON.stringify({
@@ -127,13 +96,10 @@ function EditProfile() {
     if (formData.image) data.append('image', formData.image);
 
     try {
-      console.log('Submitting update with token:', authToken);
       await axios.put(`http://localhost:5000/api/profiles/edit/${id}`, data, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${authToken}`,
-        },
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
+      localStorage.removeItem(`editCredentials_${id}`); // Clean up after successful edit
       setSuccess(true);
       setTimeout(() => navigate(`/profile/${id}`), 2000);
     } catch (err) {
@@ -152,31 +118,14 @@ function EditProfile() {
             animate={{ opacity: 1 }}
             className="text-center text-neonBlue text-2xl"
           >
-            Loading profile data...
+            Loading...
           </motion.div>
         </div>
       </div>
     );
   }
 
-  if (!authToken || error.includes('Please log in') || error.includes('Session expired')) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black flex items-center justify-center">
-        <Navbar />
-        <div className="pt-24 pb-12">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center text-neonBlue text-2xl"
-          >
-            {error || 'Please log in to edit your profile.'}
-          </motion.div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isOwner) {
+  if (error || !formData) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black flex items-center justify-center">
         <Navbar />
@@ -186,31 +135,14 @@ function EditProfile() {
             animate={{ opacity: 1 }}
             className="text-center text-red-300 text-2xl bg-red-500/20 p-6 rounded-xl border border-red-500/30"
           >
-            {error || 'You are not authorized to edit this profile.'}
+            {error || 'Error: Profile data not loaded. Please authenticate again.'}
             <motion.button
               onClick={() => navigate(`/profile/${id}`)}
               className="mt-4 text-neonBlue hover:text-neonPurple underline"
               whileHover={{ scale: 1.1 }}
             >
-              View Profile Instead
+              Back to Profile
             </motion.button>
-          </motion.div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!formData) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black flex items-center justify-center">
-        <Navbar />
-        <div className="pt-24 pb-12">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center text-red-300 text-2xl bg-red-500/20 p-6 rounded-xl border border-red-500/30"
-          >
-            Error: Profile data not loaded. Please try again.
           </motion.div>
         </div>
       </div>

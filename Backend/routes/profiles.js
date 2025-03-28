@@ -20,21 +20,9 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // 100 requests per IP
+  windowMs: 15 * 60 * 1000,
+  max: 100,
 });
-
-const authenticateToken = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-  if (!token) return res.status(401).json({ error: 'No token provided' });
-
-  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-    if (err) return res.status(403).json({ error: 'Invalid token' });
-    req.user = user;
-    next();
-  });
-};
 
 // Add Profile
 router.post('/add', limiter, upload.single('image'), async (req, res) => {
@@ -77,7 +65,7 @@ router.post('/add', limiter, upload.single('image'), async (req, res) => {
   }
 });
 
-// Login
+// Login (for reference, unchanged)
 router.post('/login', async (req, res) => {
   const { name, password } = req.body;
   try {
@@ -97,55 +85,11 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// Get Current User
-router.get('/me', authenticateToken, async (req, res) => {
-  try {
-    const profile = await Profile.findById(req.user.id).select('-password');
-    if (!profile) return res.status(404).json({ error: 'Profile not found' });
-    res.json({ userId: profile._id, name: profile.name });
-  } catch (err) {
-    console.error('Get Me Error:', err.message);
-    res.status(500).json({ error: 'Server error', details: err.message });
-  }
-});
-
-// Get All Profiles
-router.get('/', async (req, res) => {
-  try {
-    const profiles = await Profile.find().select('-password').sort({ views: -1 }).limit(50);
-    res.json(profiles);
-  } catch (err) {
-    console.error('Get Profiles Error:', err.message);
-    res.status(500).json({ error: 'Server error', details: err.message });
-  }
-});
-
-// Search Profiles
-router.get('/search', async (req, res) => {
-  try {
-    const { q } = req.query;
-    if (!q) return res.status(400).json({ error: 'Search query is required' });
-
-    const profiles = await Profile.find({
-      $or: [
-        { name: { $regex: q, $options: 'i' } },
-        { skills: { $regex: q, $options: 'i' } },
-        { location: { $regex: q, $options: 'i' } },
-      ],
-    }).select('-password').limit(50);
-
-    res.json(profiles);
-  } catch (err) {
-    console.error('Search Profiles Error:', err.message);
-    res.status(500).json({ error: 'Server error', details: err.message });
-  }
-});
-
-// Edit Profile
-router.put('/edit/:id', authenticateToken, limiter, upload.single('image'), async (req, res) => {
+// Edit Profile (Updated to require name and password)
+router.put('/edit/:id', limiter, upload.single('image'), async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, bio, skills, socialLinks, location, projects } = req.body;
+    const { name, password, bio, skills, socialLinks, location, projects } = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ error: 'Invalid profile ID' });
@@ -153,8 +97,14 @@ router.put('/edit/:id', authenticateToken, limiter, upload.single('image'), asyn
 
     const profile = await Profile.findById(id);
     if (!profile) return res.status(404).json({ error: 'Profile not found' });
-    if (profile._id.toString() !== req.user.id) {
-      return res.status(403).json({ error: 'You are not authorized to edit this profile' });
+
+    // Verify name and password
+    if (profile.name !== name) {
+      return res.status(401).json({ error: 'Incorrect name' });
+    }
+    const isMatch = await bcrypt.compare(password, profile.password);
+    if (!isMatch) {
+      return res.status(401).json({ error: 'Incorrect password' });
     }
 
     let imageUrl = profile.imageUrl;
@@ -185,7 +135,7 @@ router.put('/edit/:id', authenticateToken, limiter, upload.single('image'), asyn
   }
 });
 
-// Get Single Profile
+// Get Single Profile (unchanged)
 router.get('/:id', async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
@@ -200,6 +150,38 @@ router.get('/:id', async (req, res) => {
     res.json(profile);
   } catch (err) {
     console.error('Get Profile Error:', err.message);
+    res.status(500).json({ error: 'Server error', details: err.message });
+  }
+});
+
+// Get All Profiles (unchanged)
+router.get('/', async (req, res) => {
+  try {
+    const profiles = await Profile.find().select('-password').sort({ views: -1 }).limit(50);
+    res.json(profiles);
+  } catch (err) {
+    console.error('Get Profiles Error:', err.message);
+    res.status(500).json({ error: 'Server error', details: err.message });
+  }
+});
+
+// Search Profiles (unchanged)
+router.get('/search', async (req, res) => {
+  try {
+    const { q } = req.query;
+    if (!q) return res.status(400).json({ error: 'Search query is required' });
+
+    const profiles = await Profile.find({
+      $or: [
+        { name: { $regex: q, $options: 'i' } },
+        { skills: { $regex: q, $options: 'i' } },
+        { location: { $regex: q, $options: 'i' } },
+      ],
+    }).select('-password').limit(50);
+
+    res.json(profiles);
+  } catch (err) {
+    console.error('Search Profiles Error:', err.message);
     res.status(500).json({ error: 'Server error', details: err.message });
   }
 });
