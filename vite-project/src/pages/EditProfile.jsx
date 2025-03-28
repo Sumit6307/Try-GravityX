@@ -18,7 +18,7 @@ function EditProfile() {
   const [bioLength, setBioLength] = useState(0);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-  const [loading, setLoading] = useState(true); // Add loading state
+  const [loading, setLoading] = useState(true);
 
   const authToken = localStorage.getItem('authToken');
 
@@ -44,7 +44,7 @@ function EditProfile() {
         console.log('Current user ID:', currentUserId);
 
         setUserId(currentUserId);
-        const ownerCheck = currentUserId === profile._id.toString(); // Ensure string comparison
+        const ownerCheck = currentUserId === profile._id.toString();
         setIsOwner(ownerCheck);
         console.log('Is owner?', ownerCheck);
 
@@ -75,7 +75,7 @@ function EditProfile() {
           setError('Failed to load profile data. Check console for details.');
         }
       } finally {
-        setLoading(false); // Mark loading complete
+        setLoading(false);
       }
     };
 
@@ -89,18 +89,24 @@ function EditProfile() {
   };
 
   const handleFileChange = (e) => setFormData({ ...formData, image: e.target.files[0] });
+
   const handleProjectChange = (idx, field, value) => {
     const newProjects = [...formData.projects];
     newProjects[idx][field] = value;
     setFormData({ ...formData, projects: newProjects });
   };
+
   const addProject = () => setFormData({ ...formData, projects: [...formData.projects, { title: '', description: '', codeSnippet: '', url: '' }] });
+
   const removeProject = (idx) => {
     if (formData.projects.length > 1) setFormData({ ...formData, projects: formData.projects.filter((_, i) => i !== idx) });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+    setSuccess(false);
+
     if (!isOwner) {
       setError('You cannot edit this profile.');
       return;
@@ -132,11 +138,10 @@ function EditProfile() {
       setTimeout(() => navigate(`/profile/${id}`), 2000);
     } catch (err) {
       console.error('Update Profile Error:', err.response || err.message);
-      setError('Failed to update profile. Please try again.');
+      setError(err.response?.data?.error || 'Failed to update profile. Please try again.');
     }
   };
 
-  // Render loading state
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black flex items-center justify-center">
@@ -154,7 +159,6 @@ function EditProfile() {
     );
   }
 
-  // Render no auth or session expired
   if (!authToken || error.includes('Please log in') || error.includes('Session expired')) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black flex items-center justify-center">
@@ -172,7 +176,6 @@ function EditProfile() {
     );
   }
 
-  // Render not authorized
   if (!isOwner) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black flex items-center justify-center">
@@ -197,7 +200,6 @@ function EditProfile() {
     );
   }
 
-  // Render form only if formData is set
   if (!formData) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black flex items-center justify-center">

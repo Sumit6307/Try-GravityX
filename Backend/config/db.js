@@ -9,6 +9,16 @@ const connectDB = async () => {
       useUnifiedTopology: true,
     });
     console.log('MongoDB connected');
+
+    // Drop the old editToken_1 index if it exists
+    const collections = await mongoose.connection.db.listCollections().toArray();
+    if (collections.some(col => col.name === 'profiles')) {
+      await mongoose.connection.db.collection('profiles').dropIndex('editToken_1').catch(err => {
+        if (err.codeName !== 'IndexNotFound') {
+          console.error('Error dropping editToken_1 index:', err.message);
+        }
+      });
+    }
   } catch (err) {
     console.error('DB Connection Error:', err.message);
     process.exit(1);

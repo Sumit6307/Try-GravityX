@@ -2,8 +2,8 @@
 const mongoose = require('mongoose');
 
 const profileSchema = new mongoose.Schema({
-  name: { type: String, required: true, unique: true, index: true }, // Made name unique
-  password: { type: String, required: true }, // Hashed password
+  name: { type: String, required: true, unique: true, index: true },
+  password: { type: String, required: true },
   bio: { type: String, maxlength: 500 },
   skills: [{ type: String, index: true }],
   socialLinks: {

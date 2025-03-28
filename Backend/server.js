@@ -11,7 +11,7 @@ const app = express();
 connectDB();
 
 // Middleware
-app.use(cors({ origin: 'http://localhost:5173' })); // Allow requests from Vite’s default port
+app.use(cors({ origin: 'http://localhost:5173' }));
 app.use(express.json());
 app.use('/api/profiles', profileRoutes);
 
