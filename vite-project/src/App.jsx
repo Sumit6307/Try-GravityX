@@ -13,6 +13,8 @@ import Opportunities from './pages/Opportunities';
 import Resources from './pages/Resources';
 import ProjectShowcase from './pages/ProjectShowcase';
 import PortfolioIdeas from './pages/PortfolioIdeas';
+import ResumeBuilding from './pages/ResumeBuilding';
+import AiToolsHub from './pages/AiToolsHub';
 
 function App() {
   const [theme, setTheme] = useState('dark');
@@ -33,7 +35,9 @@ function App() {
           <Route path="/opportunities" element={<Opportunities />} />
           <Route path="/project-showcase" element={<ProjectShowcase />} />
           <Route path ="/portfolio-ideas" element={<PortfolioIdeas />} />
-          
+          <Route path="/resume-building" element={<ResumeBuilding />} />
+          <Route path="/ai-tools-hub" element={<AiToolsHub />} />
+
         </Routes>
       </div>
       <Footer />
