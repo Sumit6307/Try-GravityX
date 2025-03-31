@@ -9,6 +9,10 @@ import AddProfile from './pages/AddProfile';
 import EditProfile from './pages/EditProfile';
 import Paradise from './pages/Paradise';
 import Login from './pages/Login';
+import Opportunities from './pages/Opportunities';
+import Resources from './pages/Resources';
+import ProjectShowcase from './pages/ProjectShowcase';
+import PortfolioIdeas from './pages/PortfolioIdeas';
 
 function App() {
   const [theme, setTheme] = useState('dark');
@@ -25,6 +29,11 @@ function App() {
           <Route path="/edit-profile/:id" element={<EditProfile />} />
           <Route path="/paradise" element={<Paradise />} /> 
           <Route path="/login" element={<Login />} />
+          <Route path="/resources" element={<Resources />} />
+          <Route path="/opportunities" element={<Opportunities />} />
+          <Route path="/project-showcase" element={<ProjectShowcase />} />
+          <Route path ="/portfolio-ideas" element={<PortfolioIdeas />} />
+          
         </Routes>
       </div>
       <Footer />
