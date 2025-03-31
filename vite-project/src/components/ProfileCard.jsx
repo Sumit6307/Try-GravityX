@@ -41,11 +41,11 @@ const shareMenuVariants = {
   visible: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.2 } },
 };
 
-function ProfileCard({ profile }) {
+function ProfileCard({ profile, onOpenProfile, layout = 'grid' }) {
   const [isShareMenuOpen, setIsShareMenuOpen] = useState(false);
   const [loggedInUserId, setLoggedInUserId] = useState(null);
 
-  // Fetch logged-in user’s ID
+  // Fetch logged-in user's ID
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (token) {
@@ -120,85 +120,203 @@ function ProfileCard({ profile }) {
     },
   ];
 
+  // Layout specific styles
+  const getCardClasses = () => {
+    switch (layout) {
+      case 'grid':
+        return 'relative bg-gradient-to-br from-gray-900 to-black border border-cyan-500/20 rounded-xl p-6 w-full overflow-hidden shadow-[0_0_15px_rgba(0,212,255,0.1)] transition-all duration-300';
+      case 'masonry':
+        return 'relative bg-gradient-to-br from-gray-900 to-black border border-cyan-500/20 rounded-xl p-6 w-full overflow-hidden shadow-[0_0_15px_rgba(0,212,255,0.1)] transition-all duration-300 h-full';
+      case 'list':
+        return 'relative bg-gradient-to-br from-gray-900 to-black border border-cyan-500/20 rounded-xl p-6 w-full overflow-hidden shadow-[0_0_15px_rgba(0,212,255,0.1)] transition-all duration-300';
+      default:
+        return 'relative bg-gradient-to-br from-gray-900 to-black border border-cyan-500/20 rounded-xl p-6 w-full overflow-hidden shadow-[0_0_15px_rgba(0,212,255,0.1)] transition-all duration-300';
+    }
+  };
+
+  const getImageClasses = () => {
+    switch (layout) {
+      case 'list':
+        return 'w-20 h-20 rounded-full object-cover border-4 border-cyan-400 shadow-[0_0_15px_rgba(0,212,255,0.5)]';
+      default:
+        return 'w-24 h-24 rounded-full object-cover border-4 border-cyan-400 shadow-[0_0_15px_rgba(0,212,255,0.5)]';
+    }
+  };
+
   return (
     <motion.div
       variants={cardVariants}
-      whileHover="hover"
+      whileHover={layout !== 'list' ? "hover" : {}}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="relative bg-gradient-to-br from-gray-900 to-black border border-cyan-500/20 rounded-xl p-6 w-full max-w-md mx-auto overflow-hidden shadow-[0_0_15px_rgba(0,212,255,0.1)] transition-all duration-300"
+      className={getCardClasses()}
     >
-      {/* Profile Header */}
-      <div className="flex items-start space-x-5">
-        <div className="relative">
-          <img
-            src={profile.imageUrl || 'https://via.placeholder.com/150'}
-            alt={profile.name}
-            className="w-24 h-24 rounded-full object-cover border-4 border-cyan-400 shadow-[0_0_15px_rgba(0,212,255,0.5)]"
-          />
-          <div className="absolute inset-0 rounded-full bg-gradient-to-r from-cyan-500/20 to-purple-500/20 blur-lg -z-10 animate-pulse" />
-        </div>
-        <div className="flex-1">
-          <Link
-            to={`/profile/${profile._id}`}
-            className="text-3xl font-extrabold text-white hover:text-cyan-400 transition-colors duration-200 drop-shadow-[0_0_8px_rgba(0,212,255,0.4)]"
-          >
-            {profile.name}
-          </Link>
-          <p className="text-sm text-gray-300 flex items-center mt-2">
-            <FaMapMarkerAlt className="mr-2 text-cyan-400" size={16} />
-            {profile.location || 'Global Dev'}
-          </p>
-          <p className="text-sm text-gray-400 mt-2 italic line-clamp-2 leading-relaxed">
-            {profile.bio || 'No bio provided'}
-          </p>
-        </div>
-      </div>
+      {/* Profile Header - Different structure for list view */}
+      {layout === 'list' ? (
+        <div className="flex flex-col md:flex-row gap-6">
+          <div className="relative flex-shrink-0">
+            <img
+              src={profile.imageUrl || 'https://via.placeholder.com/150'}
+              alt={profile.name}
+              className={getImageClasses()}
+            />
+            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-cyan-500/20 to-purple-500/20 blur-lg -z-10 animate-pulse" />
+          </div>
 
-      {/* Animated Skills Box */}
-      <div className="mt-6 relative">
-        <h3 className="text-xl font-semibold text-cyan-400 mb-3 flex items-center drop-shadow-[0_0_6px_rgba(0,212,255,0.3)]">
-          <FaCode className="mr-2" /> Skills
-        </h3>
-        <div className="relative bg-gray-800/50 backdrop-blur-sm p-4 rounded-lg border border-cyan-500/30 shadow-[0_0_20px_rgba(0,212,255,0.2)] overflow-hidden">
-          <motion.div
-            className="flex space-x-4 whitespace-nowrap"
-            variants={skillVariants}
-            animate="animate"
-          >
-            {profile.skills.length > 0 ? (
-              <>
-                {profile.skills.map((skill, idx) => (
-                  <motion.span
-                    key={idx}
-                    whileHover={{ scale: 1.1, y: -2, boxShadow: '0 0 10px rgba(0, 212, 255, 0.5)' }}
-                    className="inline-block bg-cyan-500/20 text-cyan-300 px-4 py-2 rounded-full text-sm font-medium border border-cyan-400/30"
-                  >
-                    {skill}
-                  </motion.span>
-                ))}
-                {profile.skills.map((skill, idx) => (
-                  <motion.span
-                    key={`duplicate-${idx}`}
-                    whileHover={{ scale: 1.1, y: -2, boxShadow: '0 0 10px rgba(0, 212, 255, 0.5)' }}
-                    className="inline-block bg-cyan-500/20 text-cyan-300 px-4 py-2 rounded-full text-sm font-medium border border-cyan-400/30"
-                  >
-                    {skill}
-                  </motion.span>
-                ))}
-              </>
-            ) : (
-              <span className="text-gray-400 text-sm">No skills listed</span>
-            )}
-          </motion.div>
-          <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-gray-800/80 to-transparent pointer-events-none" />
-          <div className="absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-gray-800/80 to-transparent pointer-events-none" />
+          <div className="flex-1 flex flex-col">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div>
+                <Link
+                  to={`/profile/${profile._id}`}
+                  className="text-2xl font-extrabold text-white hover:text-cyan-400 transition-colors duration-200 drop-shadow-[0_0_8px_rgba(0,212,255,0.4)]"
+                >
+                  {profile.name}
+                </Link>
+                <p className="text-sm text-gray-300 flex items-center mt-2">
+                  <FaMapMarkerAlt className="mr-2 text-cyan-400" size={16} />
+                  {profile.location || 'Global Dev'}
+                </p>
+              </div>
+
+              {/* Share Button and Views Badge */}
+              <div className="flex items-center space-x-3">
+                <motion.button
+                  onClick={handleNativeShare}
+                  variants={buttonVariants}
+                  whileHover="hover"
+                  whileTap="tap"
+                  className="bg-cyan-500/20 text-cyan-300 p-2 rounded-full border border-cyan-400/30"
+                  title="Share Profile"
+                >
+                  <FaShareAlt size={14} />
+                </motion.button>
+                <div className="bg-cyan-500/20 text-cyan-300 text-xs px-3 py-1 rounded-full border border-cyan-400/30">
+                  {profile.views} Views
+                </div>
+              </div>
+            </div>
+
+            <p className="text-sm text-gray-400 mt-2 italic line-clamp-2 leading-relaxed">
+              {profile.bio || 'No bio provided'}
+            </p>
+
+            {/* Skills Section for List View */}
+            <div className="mt-4 relative overflow-hidden">
+              <h3 className="text-sm font-semibold text-cyan-400 mb-2 flex items-center">
+                <FaCode className="mr-2" size={12} /> Skills
+              </h3>
+              <div className="relative bg-gray-800/50 backdrop-blur-sm p-3 rounded-lg border border-cyan-500/30 shadow-[0_0_20px_rgba(0,212,255,0.2)] overflow-hidden">
+                <motion.div
+                  className="flex space-x-3 whitespace-nowrap"
+                  variants={skillVariants}
+                  animate="animate"
+                >
+                  {profile.skills.length > 0 ? (
+                    <>
+                      {profile.skills.map((skill, idx) => (
+                        <motion.span
+                          key={idx}
+                          whileHover={{ scale: 1.1, y: -2, boxShadow: '0 0 10px rgba(0, 212, 255, 0.5)' }}
+                          className="inline-block bg-cyan-500/20 text-cyan-300 px-3 py-1 rounded-full text-xs font-medium border border-cyan-400/30"
+                        >
+                          {skill}
+                        </motion.span>
+                      ))}
+                      {profile.skills.map((skill, idx) => (
+                        <motion.span
+                          key={`duplicate-${idx}`}
+                          whileHover={{ scale: 1.1, y: -2, boxShadow: '0 0 10px rgba(0, 212, 255, 0.5)' }}
+                          className="inline-block bg-cyan-500/20 text-cyan-300 px-3 py-1 rounded-full text-xs font-medium border border-cyan-400/30"
+                        >
+                          {skill}
+                        </motion.span>
+                      ))}
+                    </>
+                  ) : (
+                    <span className="text-gray-400 text-sm">No skills listed</span>
+                  )}
+                </motion.div>
+                <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-gray-800/80 to-transparent pointer-events-none" />
+                <div className="absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-gray-800/80 to-transparent pointer-events-none" />
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      ) : (
+        <>
+          {/* Default layout for grid and masonry */}
+          <div className="flex items-start space-x-5">
+            <div className="relative">
+              <img
+                src={profile.imageUrl || 'https://via.placeholder.com/150'}
+                alt={profile.name}
+                className={getImageClasses()}
+              />
+              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-cyan-500/20 to-purple-500/20 blur-lg -z-10 animate-pulse" />
+            </div>
+            <div className="flex-1">
+              <Link
+                to={`/profile/${profile._id}`}
+                className="text-3xl font-extrabold text-white hover:text-cyan-400 transition-colors duration-200 drop-shadow-[0_0_8px_rgba(0,212,255,0.4)]"
+              >
+                {profile.name}
+              </Link>
+              <p className="text-sm text-gray-300 flex items-center mt-2">
+                <FaMapMarkerAlt className="mr-2 text-cyan-400" size={16} />
+                {profile.location || 'Global Dev'}
+              </p>
+              <p className="text-sm text-gray-400 mt-2 italic line-clamp-2 leading-relaxed">
+                {profile.bio || 'No bio provided'}
+              </p>
+            </div>
+          </div>
+
+          {/* Animated Skills Box */}
+          <div className="mt-6 relative">
+            <h3 className="text-xl font-semibold text-cyan-400 mb-3 flex items-center drop-shadow-[0_0_6px_rgba(0,212,255,0.3)]">
+              <FaCode className="mr-2" /> Skills
+            </h3>
+            <div className="relative bg-gray-800/50 backdrop-blur-sm p-4 rounded-lg border border-cyan-500/30 shadow-[0_0_20px_rgba(0,212,255,0.2)] overflow-hidden">
+              <motion.div
+                className="flex space-x-4 whitespace-nowrap"
+                variants={skillVariants}
+                animate="animate"
+              >
+                {profile.skills.length > 0 ? (
+                  <>
+                    {profile.skills.map((skill, idx) => (
+                      <motion.span
+                        key={idx}
+                        whileHover={{ scale: 1.1, y: -2, boxShadow: '0 0 10px rgba(0, 212, 255, 0.5)' }}
+                        className="inline-block bg-cyan-500/20 text-cyan-300 px-4 py-2 rounded-full text-sm font-medium border border-cyan-400/30"
+                      >
+                        {skill}
+                      </motion.span>
+                    ))}
+                    {profile.skills.map((skill, idx) => (
+                      <motion.span
+                        key={`duplicate-${idx}`}
+                        whileHover={{ scale: 1.1, y: -2, boxShadow: '0 0 10px rgba(0, 212, 255, 0.5)' }}
+                        className="inline-block bg-cyan-500/20 text-cyan-300 px-4 py-2 rounded-full text-sm font-medium border border-cyan-400/30"
+                      >
+                        {skill}
+                      </motion.span>
+                    ))}
+                  </>
+                ) : (
+                  <span className="text-gray-400 text-sm">No skills listed</span>
+                )}
+              </motion.div>
+              <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-gray-800/80 to-transparent pointer-events-none" />
+              <div className="absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-gray-800/80 to-transparent pointer-events-none" />
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Social Links */}
-      <div className="mt-6 flex justify-center space-x-6">
+      <div className={`${layout === 'list' ? 'mt-6' : 'mt-6'} flex justify-center space-x-6`}>
         {profile.socialLinks.github && (
           <motion.a
             href={profile.socialLinks.github}
@@ -243,18 +361,18 @@ function ProfileCard({ profile }) {
         )}
       </div>
 
-      {/* Edit Button (only for owner) and Connect Button */}
-      <div className="mt-6 flex flex-col space-y-4">
+      {/* Edit Button and Connect Button */}
+      <div className={`${layout === 'list' ? 'mt-6 flex flex-col md:flex-row gap-4' : 'mt-6 flex flex-col space-y-4'}`}>
         {loggedInUserId === profile._id && (
           <motion.div
             variants={buttonVariants}
             whileHover="hover"
             whileTap="tap"
-            className="w-full text-center"
+            className={`${layout === 'list' ? 'md:flex-1' : 'w-full text-center'}`}
           >
             <Link
               to={`/edit-profile/${profile._id}`}
-              className="bg-gradient-to-r from-purple-500 to-cyan-500 text-white py-3 px-6 rounded-lg font-semibold text-lg inline-flex items-center justify-center"
+              className="bg-gradient-to-r from-purple-500 to-cyan-500 text-white py-3 px-6 rounded-lg font-semibold text-lg inline-flex items-center justify-center w-full"
             >
               <FaEdit className="mr-2" /> Edit Profile
             </Link>
@@ -267,27 +385,10 @@ function ProfileCard({ profile }) {
           variants={buttonVariants}
           whileHover="hover"
           whileTap="tap"
-          className="w-full bg-gradient-to-r from-cyan-500 to-purple-500 text-white py-3 rounded-lg font-semibold text-lg text-center block"
+          className={`${layout === 'list' ? 'md:flex-1' : 'w-full'} bg-gradient-to-r from-cyan-500 to-purple-500 text-white py-3 px-6 rounded-lg font-semibold text-lg text-center block`}
         >
           Connect
         </motion.a>
-      </div>
-
-      {/* Share Button and Views Badge */}
-      <div className="absolute top-4 right-4 flex items-center space-x-3">
-        <motion.button
-          onClick={handleNativeShare}
-          variants={buttonVariants}
-          whileHover="hover"
-          whileTap="tap"
-          className="bg-cyan-500/20 text-cyan-300 p-2 rounded-full border border-cyan-400/30"
-          title="Share Profile"
-        >
-          <FaShareAlt size={14} />
-        </motion.button>
-        <div className="bg-cyan-500/20 text-cyan-300 text-xs px-3 py-1 rounded-full border border-cyan-400/30">
-          {profile.views} Views
-        </div>
       </div>
 
       {/* Custom Share Menu */}

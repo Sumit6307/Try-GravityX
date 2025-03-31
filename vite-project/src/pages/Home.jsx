@@ -9,6 +9,7 @@ import SearchBar from '../components/SearchBar';
 import Navbar from '../components/Navbar';
 import { FaRocket, FaRedo, FaCode, FaBolt, FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 import { LazyLoadComponent } from 'react-lazy-load-image-component';
+import { RiLayoutGridFill, RiLayoutMasonryFill, RiLayoutRowFill } from 'react-icons/ri'
 
 // Animation variants
 const heroVariants = { hidden: { opacity: 0, y: 50 }, visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: 'easeOut' } } };
@@ -31,6 +32,7 @@ function Home() {
   const [error, setError] = useState('');
   const [selectedProfileId, setSelectedProfileId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [layout, setLayout] = useState('grid'); 
   const profilesPerPage = 18;
 
   const fetchProfiles = async () => {
@@ -65,6 +67,19 @@ function Home() {
 
   const handlePrevPage = () => {
     if (currentPage > 1) setCurrentPage(currentPage - 1);
+  };
+
+  const getLayoutClasses = () => {
+    switch (layout) {
+      case 'grid':
+        return 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8';
+      case 'masonry':
+        return 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 auto-rows-fr';
+      case 'list':
+        return 'flex flex-col gap-6 max-w-4xl mx-auto';
+      default:
+        return 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8';
+    }
   };
 
   return (
@@ -257,22 +272,56 @@ function Home() {
           </section>
         )}
 
-        <section className="container mx-auto py-12 px-4">
-          <h2 className="text-4xl neon-heading mb-8 text-center">Explore Developers</h2>
+<section className="container mx-auto py-12 px-4">
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-4xl neon-heading">Explore Developers</h2>
+            <div className="flex gap-2 bg-gray-800 rounded-full p-1">
+              <motion.button
+                onClick={() => setLayout('grid')}
+                className={`p-3 rounded-full ${layout === 'grid' ? 'bg-gray-700' : 'hover:bg-gray-700'}`}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <RiLayoutGridFill className="text-lg" />
+              </motion.button>
+              <motion.button
+                onClick={() => setLayout('masonry')}
+                className={`p-3 rounded-full ${layout === 'masonry' ? 'bg-gray-700' : 'hover:bg-gray-700'}`}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <RiLayoutMasonryFill className="text-lg" />
+              </motion.button>
+              <motion.button
+                onClick={() => setLayout('list')}
+                className={`p-3 rounded-full ${layout === 'list' ? 'bg-gray-700' : 'hover:bg-gray-700'}`}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <RiLayoutRowFill className="text-lg" />
+              </motion.button>
+            </div>
+          </div>
+
           {profiles.length > 0 ? (
             <>
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.5 }}
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+                className={getLayoutClasses()}
               >
                 {currentProfiles.map((profile) => (
                   <LazyLoadComponent key={profile._id} threshold={100}>
-                    <ProfileCard profile={profile} onOpenProfile={handleOpenProfile} />
+                    <ProfileCard 
+                      profile={profile} 
+                      onOpenProfile={handleOpenProfile} 
+                      layout={layout} 
+                    />
                   </LazyLoadComponent>
                 ))}
               </motion.div>
+              
               {/* Pagination Buttons */}
               <div className="flex justify-center gap-6 mt-10">
                 <motion.button
@@ -310,8 +359,6 @@ function Home() {
         <AnimatePresence>
           {selectedProfileId && <ProfileModal id={selectedProfileId} onClose={handleCloseProfile} />}
         </AnimatePresence>
-
-        <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-neonBlue/50 via-neonPurple/50 to-transparent" />
       </div>
     </div>
   );
