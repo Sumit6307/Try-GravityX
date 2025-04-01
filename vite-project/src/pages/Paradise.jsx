@@ -176,80 +176,89 @@ function Paradise() {
 
         {/* Dive into GravityX */}
         <motion.section
-          initial="hidden"
-          animate="visible"
-          variants={sectionVariants}
-          className="container mx-auto py-24 px-6"
-        >
-          <h2 className="text-6xl md:text-7xl font-bold text-cyan-400 mb-16 text-center drop-shadow-[0_0_20px_rgba(0,212,255,0.9)]">
-            Dive into GravityX
-          </h2>
-          <p className="text-2xl md:text-3xl text-gray-300 text-center mb-20 max-w-3xl mx-auto">
-            Everything a developer dreams of—unlocked in one cosmic hub.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 max-w-5xl mx-auto">
-            {[
-              {
-                title: 'Opportunities',
-                icon: <FaRocket />,
-                desc: 'Unlock a universe of career paths, internships, and learning programs tailored for developers across the globe.',
-                extra: 'Join exclusive bootcamps, hackathons, and job boards.',
-              },
-              {
-                title: 'Resources',
-                icon: <FaCode />,
-                desc: 'Access a galaxy of cutting-edge tools, libraries, APIs, and tutorials to supercharge your skills.',
-                extra: 'From free courses to premium software—find it all.',
-              },
-              {
-                title: 'Project Showcase',
-                icon: <FaGlobe />,
-                desc: 'Display your masterpieces, gain feedback from a global community, and spark collaboration.',
-                extra: 'Feature your GitHub repos and live demos.',
-              },
-              {
-                title: 'Portfolio Ideas',
-                icon: <FaStar />,
-                desc: 'Ignite your creativity with bold, innovative ideas to craft portfolios that leave a mark.',
-                extra: 'Templates, inspirations, and design tips included.',
-              },
-              {
-                title: 'Resume Building',
-                icon: <FaFileAlt />,
-                desc: 'Craft stellar resumes with expert tips and templates designed for tech careers.',
-                extra: 'Optimize for ATS and impress recruiters.',
-              },
-              {
-                title: 'AI Tools Hub',
-                icon: <FaBrain />,
-                desc: 'Explore a constellation of AI-powered tools to innovate and accelerate your projects.',
-                extra: 'Code assistants, design AI, and more.',
-              },
-            ].map((item, idx) => (
-              <motion.div
-                key={idx}
-                variants={cardVariants}
-                initial="hidden"
-                animate="visible"
-                whileHover="hover"
-                className="relative bg-black/90 p-8 rounded-2xl border border-cyan-500/40 overflow-hidden shadow-[0_0_20px_rgba(0,212,255,0.3)]"
-              >
-                <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/20 via-purple-500/20 to-transparent animate-[gradient_5s_ease_infinite]" />
-                <div className="relative z-10">
-                  <div className="flex items-center justify-center mb-6">
-                    <div className="text-5xl text-cyan-400 animate-[pulse_2s_infinite]">{item.icon}</div>
-                  </div>
-                  <h3 className="text-3xl font-bold text-cyan-300 text-center mb-4">{item.title}</h3>
-                  <p className="text-gray-200 text-lg mb-4 text-center">{item.desc}</p>
-                  <p className="text-gray-400 text-sm italic text-center mb-6">{item.extra}</p>
-                  <Link to="#" className="block text-center text-cyan-400 hover:text-purple-400 font-semibold text-lg">
-                    Explore Now <FaRocket className="inline ml-2" />
-                  </Link>
-                </div>
-              </motion.div>
-            ))}
+  initial="hidden"
+  animate="visible"
+  variants={sectionVariants}
+  className="container mx-auto py-24 px-6"
+>
+  <h2 className="text-6xl md:text-7xl font-bold text-cyan-400 mb-16 text-center drop-shadow-[0_0_20px_rgba(0,212,255,0.9)]">
+    Dive into GravityX
+  </h2>
+  <p className="text-2xl md:text-3xl text-gray-300 text-center mb-20 max-w-3xl mx-auto">
+    Everything a developer dreams of—unlocked in one cosmic hub.
+  </p>
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 max-w-5xl mx-auto">
+    {[
+      {
+        title: 'Opportunities',
+        icon: <FaRocket />,
+        desc: 'Unlock a universe of career paths, internships, and learning programs tailored for developers across the globe.',
+        extra: 'Join exclusive bootcamps, hackathons, and job boards.',
+        path: '/opportunities'
+      },
+      {
+        title: 'Resources',
+        icon: <FaCode />,
+        desc: 'Access a galaxy of cutting-edge tools, libraries, APIs, and tutorials to supercharge your skills.',
+        extra: 'From free courses to premium software—find it all.',
+        path: '/resources'
+      },
+      {
+        title: 'Project Showcase',
+        icon: <FaGlobe />,
+        desc: 'Display your masterpieces, gain feedback from a global community, and spark collaboration.',
+        extra: 'Feature your GitHub repos and live demos.',
+        path: '/project-showcase'
+      },
+      {
+        title: 'Portfolio Ideas',
+        icon: <FaStar />,
+        desc: 'Ignite your creativity with bold, innovative ideas to craft portfolios that leave a mark.',
+        extra: 'Templates, inspirations, and design tips included.',
+        path: '/portfolio-ideas'
+      },
+      {
+        title: 'Resume Building',
+        icon: <FaFileAlt />,
+        desc: 'Craft stellar resumes with expert tips and templates designed for tech careers.',
+        extra: 'Optimize for ATS and impress recruiters.',
+        path: '/resume-building'
+      },
+      {
+        title: 'AI Tools Hub',
+        icon: <FaBrain />,
+        desc: 'Explore a constellation of AI-powered tools to innovate and accelerate your projects.',
+        extra: 'Code assistants, design AI, and more.',
+        path: '/ai-tools-hub'
+      },
+    ].map((item, idx) => (
+      <motion.div
+        key={idx}
+        variants={cardVariants}
+        initial="hidden"
+        animate="visible"
+        whileHover="hover"
+        className="relative bg-black/90 p-8 rounded-2xl border border-cyan-500/40 overflow-hidden shadow-[0_0_20px_rgba(0,212,255,0.3)]"
+      >
+        <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/20 via-purple-500/20 to-transparent animate-[gradient_5s_ease_infinite]" />
+        <div className="relative z-10">
+          <div className="flex items-center justify-center mb-6">
+            <div className="text-5xl text-cyan-400 animate-[pulse_2s_infinite]">{item.icon}</div>
           </div>
-        </motion.section>
+          <h3 className="text-3xl font-bold text-cyan-300 text-center mb-4">{item.title}</h3>
+          <p className="text-gray-200 text-lg mb-4 text-center">{item.desc}</p>
+          <p className="text-gray-400 text-sm italic text-center mb-6">{item.extra}</p>
+          <Link 
+            to={item.path}
+            className="block text-center text-cyan-400 hover:text-purple-400 font-semibold text-lg"
+          >
+            Explore Now <FaRocket className="inline ml-2" />
+          </Link>
+        </div>
+      </motion.div>
+    ))}
+  </div>
+</motion.section>
 
         {/* Features Coming Soon */}
         <motion.section
