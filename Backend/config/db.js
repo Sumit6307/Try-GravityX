@@ -10,7 +10,6 @@ const connectDB = async () => {
     });
     console.log('MongoDB connected');
 
-    // Drop the old editToken_1 index if it exists
     const collections = await mongoose.connection.db.listCollections().toArray();
     if (collections.some(col => col.name === 'profiles')) {
       await mongoose.connection.db.collection('profiles').dropIndex('editToken_1').catch(err => {
