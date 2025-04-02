@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaRocket, FaBriefcase, FaGraduationCap, FaLaptopCode, FaHandshake, FaGlobeAmericas } from 'react-icons/fa';
+import { FaRocket, FaBriefcase, FaGraduationCap, FaLaptopCode, FaHandshake, FaGlobeAmericas, FaExternalLinkAlt } from 'react-icons/fa';
 import { SiHackaday } from 'react-icons/si';
 import { IoMdSchool } from 'react-icons/io';
 import Particles from 'react-tsparticles';
@@ -40,102 +40,64 @@ const Opportunities = () => {
     ],
     internships: [
       {
-        id: 1,
-        title: 'Frontend Intern',
-        company: 'WebCraft',
-        location: 'Austin, TX',
+        id: 'fallback1',
+        title: 'Frontend Development Intern',
+        company: 'Digital Solutions India',
+        location: 'Bangalore, India',
         duration: '3 months',
         description: 'Learn React and build real-world applications',
         tags: ['React', 'JavaScript', 'CSS'],
-      },
-      {
-        id: 2,
-        title: 'Backend Intern',
-        company: 'ServerSide',
-        location: 'Remote',
-        duration: '6 months',
-        description: 'Work with Node.js and cloud infrastructure',
-        tags: ['Node.js', 'AWS', 'Python'],
+        link: 'https://www.google.co.in',
       },
     ],
     bootcamps: [
       {
-        id: 1,
-        title: 'Advanced JavaScript',
-        provider: 'CodeMastery',
-        duration: '8 weeks',
-        cost: '$1,200',
-        description: 'Master modern JavaScript patterns and frameworks',
-        tags: ['ES6+', 'React', 'Performance'],
-      },
-      {
-        id: 2,
-        title: 'Full Stack Intensive',
-        provider: 'DevLaunch',
+        id: 'fallback1',
+        title: 'Full Stack Development Bootcamp',
+        company: 'CodeMaster India',
+        location: 'Online',
         duration: '12 weeks',
-        cost: '$2,500',
-        description: 'Become job-ready full stack developer',
-        tags: ['MERN', 'GraphQL', 'Docker'],
+        cost: '₹50,000',
+        description: 'Comprehensive full-stack development program',
+        tags: ['MERN', 'JavaScript', 'Node.js'],
+        link: 'https://www.google.co.in',
       },
     ],
     hackathons: [
       {
-        id: 1,
-        title: 'Global Hack Week',
-        organizer: 'DevNetwork',
-        date: 'Oct 15-17, 2023',
-        prize: '$50,000',
-        description: '48-hour coding marathon with global participants',
-        tags: ['Any Stack', 'Team Event', 'Remote'],
-      },
-      {
-        id: 2,
-        title: 'AI Innovation Challenge',
-        organizer: 'TechFuture',
-        date: 'Nov 5-7, 2023',
-        prize: '$30,000',
-        description: 'Build AI solutions for social impact',
-        tags: ['Machine Learning', 'Python', 'Cloud'],
+        id: 'fallback1',
+        title: 'National Hackathon Challenge',
+        company: 'TechFest India',
+        location: 'Multiple Cities',
+        date: 'Coming Soon',
+        prize: '₹5,00,000',
+        description: 'Annual national-level hackathon competition',
+        tags: ['Innovation', 'Coding', 'Prize'],
+        link: 'https://www.google.co.in',
       },
     ],
     mentorship: [
       {
-        id: 1,
-        title: 'Career Growth Program',
-        mentor: 'Sarah Johnson',
-        expertise: 'Ex-Google, 10+ years experience',
+        id: 'fallback1',
+        title: 'Tech Career Mentorship',
+        company: 'CareerGrowth India',
+        location: 'Online',
         duration: '3 months',
-        description: 'Personalized career guidance and technical coaching',
-        tags: ['Interview Prep', 'Resume Review', 'Networking'],
-      },
-      {
-        id: 2,
-        title: 'Startup Mentorship',
-        mentor: 'Michael Chen',
-        expertise: '3-time founder, Angel Investor',
-        duration: '6 sessions',
-        description: 'Guidance for tech startup founders',
-        tags: ['Pitching', 'Product Development', 'Funding'],
+        description: '1-on-1 mentorship with industry experts',
+        tags: ['Career', 'Guidance', 'Tech'],
+        link: 'https://www.google.co.in',
       },
     ],
     remote: [
       {
-        id: 1,
+        id: 'fallback1',
         title: 'Remote React Developer',
-        company: 'DigitalNomads Inc',
+        company: 'GlobalTech Solutions',
         location: 'Fully Remote',
-        salary: '$100k - $130k',
-        description: 'Build React applications for global clients',
-        tags: ['React', 'TypeScript', 'Remote Work'],
-      },
-      {
-        id: 2,
-        title: 'DevOps Engineer',
-        company: 'CloudFirst',
-        location: 'Remote (Global)',
-        salary: '$140k - $170k',
-        description: 'Implement CI/CD pipelines and cloud infrastructure',
-        tags: ['AWS', 'Terraform', 'Kubernetes'],
+        salary: '₹8L - ₹12L',
+        description: 'Work from anywhere in India',
+        tags: ['React', 'Remote', 'Flexible'],
+        link: 'https://www.google.co.in',
       },
     ],
   };
@@ -144,32 +106,60 @@ const Opportunities = () => {
     const fetchData = async () => {
       setLoading(true);
       setError(null);
-      const data = { ...fallbackData }; // Initialize with fallback data
+      const data = { ...fallbackData };
 
       try {
-        // Fetch jobs from backend proxy using SerpAPI
-        const response = await axios.get('http://localhost:5000/api/google-jobs', {
-          params: {
-            q: 'jobs',
-            location: 'India',
-          },
-        });
-        console.log('Fetched jobs:', response.data);
-        data.jobs = response.data; // Use processed jobs from backend
-      } catch (err) {
-        console.error('Error fetching jobs:', err.response?.data || err.message);
-        setError(`Failed to load jobs: ${err.response?.data?.error || err.message}. Using fallback data.`);
-      }
+        const requests = tabs.map(tab => 
+          axios.get(`http://localhost:5000/api/google-${tab.id}`, {
+            params: {
+              q: tab.id === 'remote' ? 'Remote work' : tab.id,
+              location: 'India',
+            },
+          }).catch(err => {
+            console.error(`Error fetching ${tab.id}:`, err);
+            return { data: fallbackData[tab.id] };
+          })
+        );
 
-      setOpportunitiesData(data);
-      setLoading(false);
+        const responses = await Promise.all(requests);
+        
+        tabs.forEach((tab, index) => {
+          data[tab.id] = responses[index].data || fallbackData[tab.id];
+        });
+
+        setOpportunitiesData(data);
+      } catch (err) {
+        console.error('Error fetching data:', err);
+        setError(`Failed to load some data: ${err.message}. Using fallback data where needed.`);
+      } finally {
+        setLoading(false);
+      }
     };
+
     fetchData();
   }, []);
 
   const particlesInit = async (main) => {
     await loadFull(main);
   };
+
+  // Error boundary fallback
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+        <div className="text-center bg-gray-800 p-8 rounded-lg max-w-md">
+          <h2 className="text-2xl font-bold text-red-500 mb-4">Error Loading Opportunities</h2>
+          <p className="text-gray-300 mb-6">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-cyan-600 rounded hover:bg-cyan-700 transition-colors"
+          >
+            Reload Page
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white overflow-hidden relative">
@@ -245,18 +235,11 @@ const Opportunities = () => {
           ))}
         </motion.div>
 
-        {/* Error Message */}
-        {error && (
-          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center text-red-400 mb-8">
-            {error}
-          </motion.p>
-        )}
-
         {/* Loading State */}
         {loading && (
-          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center text-gray-400 mb-8">
-            Loading opportunities...
-          </motion.p>
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cyan-500"></div>
+          </div>
         )}
 
         {/* Opportunities Grid */}
@@ -266,7 +249,7 @@ const Opportunities = () => {
               {opportunitiesData[activeTab]?.length > 0 ? (
                 opportunitiesData[activeTab].map((opportunity) => (
                   <motion.div
-                    key={opportunity.id}
+                    key={opportunity.id || Math.random().toString(36).substr(2, 9)}
                     layout
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -280,7 +263,7 @@ const Opportunities = () => {
                   >
                     <div className="p-6">
                       <div className="flex justify-between items-start mb-4">
-                        <h3 className="text-xl font-bold text-white">{opportunity.title}</h3>
+                        <h3 className="text-xl font-bold text-white">{opportunity.title || 'Untitled Opportunity'}</h3>
                         {hoveredCard === opportunity.id && (
                           <motion.span
                             initial={{ scale: 0 }}
@@ -291,55 +274,56 @@ const Opportunities = () => {
                           </motion.span>
                         )}
                       </div>
-                      <p className="text-gray-300 mb-2">{opportunity.company || opportunity.provider || opportunity.mentor || opportunity.organizer}</p>
-                      <p className="text-gray-400 text-sm mb-4">{opportunity.location || opportunity.duration || opportunity.date}</p>
-                      <p className="text-gray-300 mb-4">{opportunity.description}</p>
+                      <p className="text-gray-300 mb-2">{opportunity.company || opportunity.provider || 'Unknown'}</p>
+                      <p className="text-gray-400 text-sm mb-4">{opportunity.location || 'Location not specified'}</p>
+                      <p className="text-gray-300 mb-4">{opportunity.description || 'No description available'}</p>
+                      
                       <div className="flex flex-wrap gap-2 mb-6">
-                        {opportunity.tags ? (
-                          opportunity.tags.map((tag, index) => (
-                            <motion.span key={index} className="px-3 py-1 bg-gray-700 rounded-full text-xs" whileHover={{ scale: 1.1 }}>
-                              {tag}
-                            </motion.span>
-                          ))
-                        ) : (
-                          <motion.span className="px-3 py-1 bg-gray-700 rounded-full text-xs" whileHover={{ scale: 1.1 }}>
-                            Job
+                        {(opportunity.tags || []).map((tag, index) => (
+                          <motion.span key={index} className="px-3 py-1 bg-gray-700 rounded-full text-xs" whileHover={{ scale: 1.1 }}>
+                            {tag}
                           </motion.span>
-                        )}
+                        ))}
                       </div>
+
                       {opportunity.salary || opportunity.prize || opportunity.cost ? (
                         <p className="text-lg font-semibold text-cyan-400 mb-6">{opportunity.salary || opportunity.prize || opportunity.cost}</p>
                       ) : null}
-                      <div className="flex justify-between items-center">
+
+                      {/* Single Apply Button */}
+                      <div className="mt-4">
                         <a
-                          href={opportunity.link || `/opportunity/${activeTab}/${opportunity.id}`}
-                          target={opportunity.link ? '_blank' : '_self'}
-                          rel={opportunity.link ? 'noopener noreferrer' : ''}
-                          className="text-cyan-400 hover:text-cyan-300 font-medium flex items-center"
+                          href={opportunity.link || '#'}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block"
                         >
-                          {opportunity.link ? 'Apply Externally' : 'View Details'}
-                          <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                          </svg>
+                          <motion.button
+                            whileHover={{ scale: opportunity.link ? 1.03 : 1 }}
+                            whileTap={{ scale: opportunity.link ? 0.97 : 1 }}
+                            className={`w-full py-2 px-4 rounded-lg font-medium flex items-center justify-center gap-2 ${
+                              opportunity.link 
+                                ? 'bg-gradient-to-r from-purple-600 to-cyan-500 hover:shadow-lg' 
+                                : 'bg-gray-700 cursor-not-allowed'
+                            }`}
+                            disabled={!opportunity.link}
+                          >
+                            {opportunity.link ? 'Apply Now' : 'Details Coming Soon'}
+                            {opportunity.link && <FaExternalLinkAlt className="text-xs" />}
+                          </motion.button>
                         </a>
-                        <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="px-4 py-2 bg-purple-600 rounded-lg text-sm font-medium">
-                          Apply Now
-                        </motion.button>
                       </div>
                     </div>
-                    {hoveredCard === opportunity.id && (
-                      <motion.div
-                        className="absolute inset-0 -z-10 bg-gradient-to-br from-cyan-500/10 to-purple-500/10 rounded-xl"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                      />
-                    )}
                   </motion.div>
                 ))
               ) : (
-                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center col-span-full text-gray-400">
-                  No opportunities available at the moment.
-                </motion.p>
+                <motion.div 
+                  className="col-span-full text-center py-12"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                >
+                  <p className="text-gray-400 text-lg">No {activeTab} opportunities found</p>
+                </motion.div>
               )}
             </AnimatePresence>
           </motion.div>
