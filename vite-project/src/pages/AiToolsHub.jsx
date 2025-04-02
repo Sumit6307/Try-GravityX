@@ -6,7 +6,6 @@ import { SiTensorflow, SiOpenai, SiHuggingface, SiGitlab, SiFigma, SiNotion } fr
 const AiToolsHub = () => {
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [expandedTool, setExpandedTool] = useState(null);
 
   const categories = [
     { id: 'all', name: 'All Tools' },
@@ -118,8 +117,8 @@ const AiToolsHub = () => {
   const filteredTools = tools.filter(tool => 
     (activeCategory === 'all' || tool.category === activeCategory) &&
     (tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    tool.description.toLowerCase().includes(searchQuery.toLowerCase())
-  ));
+    tool.description.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white p-6">
@@ -193,9 +192,7 @@ const AiToolsHub = () => {
                 animate={{ opacity: 1, y: 0 }} 
                 transition={{ duration: 0.5 }} 
                 whileHover={{ y: -5 }} 
-                className={`bg-gray-800/50 backdrop-blur-sm rounded-xl overflow-hidden border ${
-                  expandedTool === tool.id ? 'border-cyan-400 shadow-lg shadow-cyan-500/20' : 'border-gray-700'
-                }`}
+                className="bg-gray-800/50 backdrop-blur-sm rounded-xl overflow-hidden border border-gray-700 hover:border-cyan-400 hover:shadow-lg hover:shadow-cyan-500/20 transition-all"
               >
                 <div className="p-6">
                   <div className="flex items-start gap-4 mb-4">
@@ -208,56 +205,40 @@ const AiToolsHub = () => {
                     </div>
                   </div>
 
-                  {expandedTool === tool.id && (
-                    <motion.div 
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      transition={{ duration: 0.3 }}
-                      className="mt-4"
-                    >
-                      <div className="mb-4">
-                        <h4 className="text-sm font-semibold text-cyan-400 mb-2">Key Features:</h4>
-                        <ul className="text-sm text-gray-300 space-y-1">
-                          {tool.features.map((feature, i) => (
-                            <li key={i} className="flex items-start">
-                              <span className="text-cyan-400 mr-2">•</span> {feature}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <div>
-                          <span className="text-gray-400">Pricing: </span>
-                          <span className="text-gray-200">{tool.pricing}</span>
-                        </div>
-                        <div>
-                          <span className="text-gray-400">Launched: </span>
-                          <span className="text-gray-200">{tool.launchYear}</span>
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
+                  <div className="mb-4">
+                    <h4 className="text-sm font-semibold text-cyan-400 mb-2">Key Features:</h4>
+                    <ul className="text-sm text-gray-300 space-y-1">
+                      {tool.features.map((feature, i) => (
+                        <li key={i} className="flex items-start">
+                          <span className="text-cyan-400 mr-2">•</span> {feature}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
 
-                  <div className="mt-6 flex justify-between items-center">
+                  <div className="flex justify-between text-sm mb-4">
+                    <div>
+                      <span className="text-gray-400">Pricing: </span>
+                      <span className="text-gray-200">{tool.pricing}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-400">Launched: </span>
+                      <span className="text-gray-200">{tool.launchYear}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between items-center">
                     <span className="text-xs px-3 py-1 bg-gray-700 rounded-full">
                       {tool.category}
                     </span>
-                    <div className="flex gap-3">
-                      <button 
-                        onClick={() => setExpandedTool(expandedTool === tool.id ? null : tool.id)}
-                        className="text-sm text-cyan-400 hover:text-cyan-300"
-                      >
-                        {expandedTool === tool.id ? 'Show Less' : 'Details'}
-                      </button>
-                      <a
-                        href={tool.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm flex items-center gap-1 text-purple-400 hover:text-purple-300"
-                      >
-                        Visit <FaExternalLinkAlt className="text-xs" />
-                      </a>
-                    </div>
+                    <a
+                      href={tool.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm flex items-center gap-1 text-purple-400 hover:text-purple-300"
+                    >
+                      Visit <FaExternalLinkAlt className="text-xs" />
+                    </a>
                   </div>
                 </div>
               </motion.div>
