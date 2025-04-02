@@ -22,76 +22,108 @@ const PortfolioIdeas = () => {
   const portfolioItems = [
     {
       id: 1,
-      title: 'Neon Cyberpunk',
-      description: 'A futuristic portfolio with neon aesthetics and cyberpunk vibes',
-      longDescription: 'This design features dark backgrounds with vibrant neon accents, glitch effects, and futuristic UI elements. Perfect for developers working with cutting-edge technologies or game developers.',
-      tags: ['dark-theme', 'animation-heavy', 'modern'],
+      title: 'Neon Cyberpunk Portfolio',
+      description: 'Futuristic design with neon aesthetics and cyberpunk vibes',
+      longDescription: 'This portfolio features dark backgrounds with vibrant neon accents, glitch effects, and futuristic UI elements. Perfect for developers working with cutting-edge technologies. Includes animated code snippets and 3D model integration.',
+      tags: ['dark-theme', 'animation', 'modern', 'threejs'],
       category: 'creative',
       difficulty: 'Advanced',
-      previewUrl: 'https://example.com/neon-cyberpunk',
+      previewUrl: 'https://www.awwwards.com/sites/cyberpunk-developer-portfolio',
       icon: <FaLightbulb className="text-yellow-400" />,
       featured: true,
+      platform: 'Awwwards'
     },
     {
       id: 2,
-      title: 'Minimal Dev',
-      description: 'Clean, typography-focused portfolio for developers',
-      longDescription: 'A minimalist approach that puts your code and projects front and center. Features a monospace font, clean lines, and subtle animations. Great for backend developers or those who prefer simplicity.',
-      tags: ['minimal', 'typography', 'light-theme'],
+      title: 'Minimal Developer Portfolio',
+      description: 'Clean, typography-focused design for developers',
+      longDescription: 'A minimalist approach that puts your code and projects front and center. Features a monospace font, clean lines, and subtle animations. Includes a live GitHub contribution graph and project showcase with code snippets.',
+      tags: ['minimal', 'typography', 'light-theme', 'github-api'],
       category: 'minimal',
       difficulty: 'Beginner',
-      previewUrl: 'https://example.com/minimal-dev',
+      previewUrl: 'https://dribbble.com/shots/18234520-Minimal-Developer-Portfolio',
       icon: <RiLayoutRowFill className="text-blue-400" />,
       featured: false,
+      platform: 'Dribbble'
     },
     {
       id: 3,
-      title: 'Interactive Timeline',
-      description: 'Portfolio structured as an interactive timeline of your career',
-      longDescription: 'Visitors can scroll through your professional journey, with each stop on the timeline revealing projects, skills learned, and experiences. Includes smooth scroll animations and parallax effects.',
-      tags: ['storytelling', 'interactive', 'animation'],
+      title: 'Interactive Timeline Portfolio',
+      description: 'Structured as an interactive timeline of your career',
+      longDescription: 'Visitors scroll through your professional journey, with each stop revealing projects, skills, and experiences. Features smooth scroll animations, parallax effects, and integrated media. Supports dark/light mode toggle.',
+      tags: ['storytelling', 'interactive', 'animation', 'responsive'],
       category: 'interactive',
       difficulty: 'Intermediate',
-      previewUrl: 'https://example.com/interactive-timeline',
+      previewUrl: 'https://codepen.io/collection/XgvYQq',
       icon: <FaChartLine className="text-purple-400" />,
       featured: true,
+      platform: 'CodePen'
     },
     {
       id: 4,
-      title: 'Code Canvas',
-      description: 'Your portfolio as an interactive coding environment',
-      longDescription: 'Visitors can actually interact with code snippets that demonstrate your skills. Features a live code editor that shows your projects in action. Perfect for frontend developers and educators.',
-      tags: ['interactive', 'educational', 'unique'],
+      title: 'Code Canvas Portfolio',
+      description: 'Interactive coding environment portfolio',
+      longDescription: 'Visitors can interact with code snippets demonstrating your skills. Features a live code editor showing projects in action, syntax highlighting, and executable examples. Integrates with CodeSandbox for live demos.',
+      tags: ['interactive', 'educational', 'unique', 'codesandbox'],
       category: 'interactive',
       difficulty: 'Advanced',
-      previewUrl: 'https://example.com/code-canvas',
+      previewUrl: 'https://codesandbox.io/examples/portfolio',
       icon: <FaLaptopCode className="text-green-400" />,
       featured: true,
+      platform: 'CodeSandbox'
     },
     {
       id: 5,
-      title: 'Mobile-First Showcase',
-      description: 'Portfolio optimized for mobile with gesture controls',
-      longDescription: 'Designed mobile-first with swipeable sections, touch-friendly navigation, and performance optimizations. Shows your understanding of mobile UX principles. Great for mobile developers.',
-      tags: ['mobile', 'performance', 'touch-friendly'],
+      title: 'Mobile-First Developer Portfolio',
+      description: 'Optimized for mobile with gesture controls',
+      longDescription: 'Designed mobile-first with swipeable sections, touch-friendly navigation, and performance optimizations. Includes device mockup displays, touch gestures for navigation, and offline capabilities with service workers.',
+      tags: ['mobile', 'performance', 'pwa', 'touch-friendly'],
       category: 'mobile-first',
       difficulty: 'Intermediate',
-      previewUrl: 'https://example.com/mobile-first',
+      previewUrl: 'https://www.behance.net/gallery/125640589/Mobile-First-Developer-Portfolio',
       icon: <FaMobileAlt className="text-cyan-400" />,
       featured: false,
+      platform: 'Behance'
     },
     {
       id: 6,
-      title: 'Data Visualization',
-      description: 'Portfolio that visualizes your skills and experience',
-      longDescription: 'Uses charts, graphs, and data visualization techniques to showcase your skills, project impact, and career growth. Integrates with GitHub API to pull real-time stats. Ideal for data scientists and analysts.',
-      tags: ['data-driven', 'analytics', 'dynamic'],
+      title: 'Data Visualization Portfolio',
+      description: 'Visualizes your skills and experience with data',
+      longDescription: 'Uses D3.js to create dynamic charts and graphs showcasing your skills, project impact, and career growth. Integrates with GitHub API for real-time stats. Includes interactive dashboards and skill radars with filtering capabilities.',
+      tags: ['d3js', 'analytics', 'dynamic', 'github-api'],
       category: 'data-driven',
       difficulty: 'Advanced',
-      previewUrl: 'https://example.com/data-visualization',
+      previewUrl: 'https://observablehq.com/@d3/gallery',
       icon: <FaChartLine className="text-pink-400" />,
       featured: false,
+      platform: 'Observable'
     },
+    {
+      id: 7,
+      title: '3D Developer Portfolio',
+      description: 'Immersive 3D environment showcasing your work',
+      longDescription: 'A WebGL-powered 3D space where visitors can navigate through your projects as interactive objects. Features Three.js scenes, animated transitions, and spatial audio. Perfect for game developers and 3D artists.',
+      tags: ['threejs', 'webgl', '3d', 'immersive'],
+      category: 'creative',
+      difficulty: 'Advanced',
+      previewUrl: 'https://threejs.org/examples/#webgl_animation_keyframes',
+      icon: <FaPalette className="text-orange-400" />,
+      featured: true,
+      platform: 'Three.js'
+    },
+    {
+      id: 8,
+      title: 'Terminal Style Portfolio',
+      description: 'Command-line interface inspired portfolio',
+      longDescription: 'Interactive terminal emulator where visitors can "run commands" to view your projects and info. Features typewriter effects, command history, and Easter eggs. Supports actual commands like "ls projects" or "cat about.txt".',
+      tags: ['cli', 'terminal', 'interactive', 'retro'],
+      category: 'interactive',
+      difficulty: 'Intermediate',
+      previewUrl: 'https://github.com/mkrl/misbrands',
+      icon: <FaLaptopCode className="text-red-400" />,
+      featured: false,
+      platform: 'GitHub'
+    }
   ];
 
   const filteredItems = portfolioItems.filter((item) => {
@@ -132,7 +164,7 @@ const PortfolioIdeas = () => {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
           >
-            Ignite your creativity with stellar portfolio designs from across the galaxy
+            Discover real portfolio examples from top platforms to inspire your next design
           </motion.p>
         </motion.div>
 
@@ -155,7 +187,7 @@ const PortfolioIdeas = () => {
               <IoMdSearch className="absolute left-4 text-gray-400 text-xl" />
               <input
                 type="text"
-                placeholder="Search portfolio ideas by style or features..."
+                placeholder="Search by style, platform, or technology..."
                 className="w-full pl-12 pr-6 py-4 bg-gray-800/50 backdrop-blur-sm rounded-full border border-gray-700 focus:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 transition-all"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -239,16 +271,24 @@ const PortfolioIdeas = () => {
                       <div className="w-12 h-12 flex items-center justify-center bg-gray-700 rounded-lg">
                         <span className="text-2xl">{item.icon}</span>
                       </div>
-                      {item.featured && (
+                      <div className="flex gap-2">
+                        {item.featured && (
+                          <motion.span
+                            className="px-3 py-1 bg-gradient-to-r from-purple-600 to-pink-600 text-xs font-semibold rounded-full"
+                            initial={{ scale: 0.8 }}
+                            animate={{ scale: 1 }}
+                            whileHover={{ scale: 1.1 }}
+                          >
+                            Featured
+                          </motion.span>
+                        )}
                         <motion.span
-                          className="px-3 py-1 bg-gradient-to-r from-purple-600 to-pink-600 text-xs font-semibold rounded-full"
-                          initial={{ scale: 0.8 }}
-                          animate={{ scale: 1 }}
-                          whileHover={{ scale: 1.1 }}
+                          className="px-3 py-1 bg-gray-700 text-xs font-semibold rounded-full"
+                          whileHover={{ scale: 1.05 }}
                         >
-                          Featured
+                          {item.platform}
                         </motion.span>
-                      )}
+                      </div>
                     </div>
                     
                     <h3 className="text-xl font-bold text-white mb-2">{item.title}</h3>
@@ -269,7 +309,11 @@ const PortfolioIdeas = () => {
                     </div>
                     
                     <div className="mt-auto pt-4 border-t border-gray-700 flex justify-between items-center">
-                      <span className="text-sm font-medium px-3 py-1 bg-gray-700 rounded-full">
+                      <span className={`text-sm font-medium px-3 py-1 rounded-full ${
+                        item.difficulty === 'Beginner' ? 'bg-green-900/50 text-green-400' :
+                        item.difficulty === 'Intermediate' ? 'bg-yellow-900/50 text-yellow-400' :
+                        'bg-red-900/50 text-red-400'
+                      }`}>
                         {item.difficulty}
                       </span>
                       
@@ -289,7 +333,7 @@ const PortfolioIdeas = () => {
                           className="text-sm flex items-center gap-1 text-purple-400 hover:text-purple-300"
                           whileHover={{ x: 5 }}
                         >
-                          Preview <FaExternalLinkAlt className="text-xs" />
+                          View on {item.platform} <FaExternalLinkAlt className="text-xs" />
                         </motion.a>
                       </div>
                     </div>
@@ -335,26 +379,32 @@ const PortfolioIdeas = () => {
           <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10" />
           <div className="relative z-10 text-center">
             <h3 className="text-3xl md:text-4xl font-bold mb-6">
-              Need a custom portfolio design?
+              Ready to build your cosmic portfolio?
             </h3>
             <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-8">
-              Our cosmic designers can create a unique portfolio tailored to your personal brand
+              Get started with these resources from real developers and designers
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <motion.button
+              <motion.a
+                href="https://github.com/topics/portfolio-template"
+                target="_blank"
+                rel="noopener noreferrer"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className="px-8 py-4 bg-gradient-to-r from-cyan-500 to-purple-600 rounded-full font-semibold shadow-lg"
               >
-                Request Design Service
-              </motion.button>
-              <motion.button
+                Explore GitHub Templates
+              </motion.a>
+              <motion.a
+                href="https://www.awwwards.com/websites/portfolio/"
+                target="_blank"
+                rel="noopener noreferrer"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className="px-8 py-4 bg-transparent border border-cyan-400 rounded-full font-semibold"
               >
-                View Portfolio Templates
-              </motion.button>
+                Get Inspired on Awwwards
+              </motion.a>
             </div>
           </div>
         </motion.div>
