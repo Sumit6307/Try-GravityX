@@ -15,6 +15,8 @@ import ProjectShowcase from './pages/ProjectShowcase';
 import PortfolioIdeas from './pages/PortfolioIdeas';
 import ResumeBuilding from './pages/ResumeBuilding';
 import AiToolsHub from './pages/AiToolsHub';
+import IndustryTrends from './pages/IndustryTrends';
+import AICareerGuide from './pages/AICarrerGuide';
 
 function App() {
   const [theme, setTheme] = useState('dark');
@@ -37,6 +39,9 @@ function App() {
           <Route path ="/portfolio-ideas" element={<PortfolioIdeas />} />
           <Route path="/resume-building" element={<ResumeBuilding />} />
           <Route path="/ai-tools-hub" element={<AiToolsHub />} />
+          <Route path="/industry-trends" element={<IndustryTrends />} />
+          <Route path="/ai-career-guide" element={<AICareerGuide/>} />
+          
 
         </Routes>
       </div>
