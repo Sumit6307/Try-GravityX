@@ -5,11 +5,10 @@ import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import ProfileCard from '../components/ProfileCard';
 import ProfileModal from '../components/ProfileModal';
-import SearchBar from '../components/SearchBar';
 import Navbar from '../components/Navbar';
-import { FaRocket, FaRedo, FaCode, FaBolt, FaArrowLeft, FaArrowRight } from 'react-icons/fa';
+import { FaRocket, FaRedo, FaCode, FaBolt, FaArrowLeft, FaArrowRight, FaSearch } from 'react-icons/fa';
 import { LazyLoadComponent } from 'react-lazy-load-image-component';
-import { RiLayoutGridFill, RiLayoutMasonryFill, RiLayoutRowFill } from 'react-icons/ri'
+import { RiLayoutGridFill, RiLayoutMasonryFill, RiLayoutRowFill } from 'react-icons/ri';
 
 // Animation variants
 const heroVariants = { hidden: { opacity: 0, y: 50 }, visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: 'easeOut' } } };
@@ -26,13 +25,43 @@ const navButtonVariants = {
   tap: { scale: 0.95 },
 };
 
+// SearchBar component
+const SearchBar = ({ onSearch }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    onSearch(searchTerm);
+  };
+
+  return (
+    <form onSubmit={handleSearch} className="relative max-w-2xl mx-auto">
+      <motion.input
+        type="text"
+        value={searchTerm}
+        onChange={(e) => {
+          setSearchTerm(e.target.value);
+          if (e.target.value === '') onSearch(''); // Clear search when input is empty
+        }}
+        placeholder="Search by name, skills, location, bio..."
+        className="w-full p-4 pl-12 rounded-full bg-gray-800 text-white border border-gray-700 focus:outline-none focus:border-cyan-400 shadow-lg"
+        whileFocus={{ boxShadow: '0 0 20px rgba(0, 212, 255, 0.3)' }}
+      />
+      <button type="submit" className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-cyan-400">
+        <FaSearch size={20} />
+      </button>
+    </form>
+  );
+};
+
 function Home() {
   const [profiles, setProfiles] = useState([]);
+  const [filteredProfiles, setFilteredProfiles] = useState([]);
   const [trendingSkills, setTrendingSkills] = useState([]);
   const [error, setError] = useState('');
   const [selectedProfileId, setSelectedProfileId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [layout, setLayout] = useState('grid'); 
+  const [layout, setLayout] = useState('grid');
   const profilesPerPage = 18;
 
   const fetchProfiles = async () => {
@@ -40,6 +69,7 @@ function Home() {
       setError('');
       const res = await axios.get('http://localhost:5000/api/profiles');
       setProfiles(res.data);
+      setFilteredProfiles(res.data);
       const skillCount = {};
       res.data.forEach((profile) => profile.skills.forEach((skill) => { skillCount[skill.toLowerCase()] = (skillCount[skill.toLowerCase()] || 0) + 1; }));
       const topSkills = Object.entries(skillCount).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([skill]) => skill.toUpperCase());
@@ -52,14 +82,37 @@ function Home() {
 
   useEffect(() => { fetchProfiles(); }, []);
 
+  const handleSearch = (searchTerm) => {
+    if (!searchTerm) {
+      setFilteredProfiles(profiles);
+      setCurrentPage(1);
+      return;
+    }
+
+    const lowercasedSearch = searchTerm.toLowerCase();
+    const filtered = profiles.filter(profile => (
+      (profile.name && profile.name.toLowerCase().includes(lowercasedSearch)) ||
+      (profile.bio && profile.bio.toLowerCase().includes(lowercasedSearch)) ||
+      (profile.location && profile.location.toLowerCase().includes(lowercasedSearch)) ||
+      (profile.skills && profile.skills.some(skill => skill.toLowerCase().includes(lowercasedSearch))) ||
+      (profile.projects && profile.projects.some(project => (
+        (project.title && project.title.toLowerCase().includes(lowercasedSearch)) ||
+        (project.description && project.description.toLowerCase().includes(lowercasedSearch))
+      )))
+    ));
+
+    setFilteredProfiles(filtered);
+    setCurrentPage(1);
+  };
+
   const handleOpenProfile = (id) => { setSelectedProfileId(id); };
   const handleCloseProfile = () => { setSelectedProfileId(null); };
 
   // Pagination Logic
   const indexOfLastProfile = currentPage * profilesPerPage;
   const indexOfFirstProfile = indexOfLastProfile - profilesPerPage;
-  const currentProfiles = profiles.slice(indexOfFirstProfile, indexOfLastProfile);
-  const totalPages = Math.ceil(profiles.length / profilesPerPage);
+  const currentProfiles = filteredProfiles.slice(indexOfFirstProfile, indexOfLastProfile);
+  const totalPages = Math.ceil(filteredProfiles.length / profilesPerPage);
 
   const handleNextPage = () => {
     if (currentPage < totalPages) setCurrentPage(currentPage + 1);
@@ -225,7 +278,7 @@ function Home() {
 
         <div className="container mx-auto py-10 px-4">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-            <SearchBar setProfiles={setProfiles} />
+            <SearchBar onSearch={handleSearch} />
           </motion.div>
         </div>
 
@@ -272,7 +325,7 @@ function Home() {
           </section>
         )}
 
-<section className="container mx-auto py-12 px-4">
+        <section className="container mx-auto py-12 px-4">
           <div className="flex justify-between items-center mb-8">
             <h2 className="text-4xl neon-heading">Explore Developers</h2>
             <div className="flex gap-2 bg-gray-800 rounded-full p-1">
@@ -303,7 +356,7 @@ function Home() {
             </div>
           </div>
 
-          {profiles.length > 0 ? (
+          {filteredProfiles.length > 0 ? (
             <>
               <motion.div
                 initial={{ opacity: 0 }}
@@ -348,11 +401,13 @@ function Home() {
                 </motion.button>
               </div>
               <p className="text-center text-gray-400 mt-4">
-                Page {currentPage} of {totalPages}
+                Page {currentPage} of {totalPages} | Showing {filteredProfiles.length} developers
               </p>
             </>
           ) : (
-            <p className="text-center text-gray-400 text-lg">No profiles available yet. Be the first!</p>
+            <p className="text-center text-gray-400 text-lg">
+              {profiles.length === 0 ? 'No profiles available yet. Be the first!' : 'No matching profiles found.'}
+            </p>
           )}
         </section>
 
