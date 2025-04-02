@@ -42,7 +42,7 @@ const processResults = (results, type) => {
 
 // Generic API endpoint handler
 const createApiHandler = (type) => (req, res) => {
-  console.log(`Request to /api/google-${type} with params:`, req.query);
+  // console.log(`Request to /api/google-${type} with params:`, req.query);      Sumit(TOO SEE THE QUERY)
 
   const queryMap = {
     jobs: 'jobs',
