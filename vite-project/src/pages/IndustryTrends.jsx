@@ -386,7 +386,7 @@ function IndustryTrends() {
                   {filteredItems.map((item) => (
                     <motion.div
                       key={item.id}
-                      variants={itemVariants}
+                      // variants={itemVariants}
                       whileHover="hover"
                       variants={cardVariants}
                       className="bg-gray-800/50 border border-gray-700 rounded-xl overflow-hidden hover:border-cyan-500/50 transition-all duration-300"
