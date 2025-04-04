@@ -1,4 +1,3 @@
-// routes/profiles.js
 const express = require('express');
 const router = express.Router();
 const Profile = require('../models/Profile');
@@ -23,6 +22,34 @@ const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
 });
+
+// Auth middleware
+const authenticate = async (req, res, next) => {
+  try {
+    const token = req.header('Authorization')?.replace('Bearer ', '');
+    if (!token) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const profile = await Profile.findOne({ _id: decoded.id, name: decoded.name });
+    if (!profile) {
+      return res.status(401).json({ error: 'Profile not found' });
+    }
+
+    req.profile = profile;
+    req.token = token;
+    next();
+  } catch (err) {
+    if (err.name === 'TokenExpiredError') {
+      return res.status(401).json({ error: 'Token expired' });
+    }
+    if (err.name === 'JsonWebTokenError') {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+    res.status(401).json({ error: 'Authentication failed' });
+  }
+};
 
 // Add Profile
 router.post('/add', limiter, upload.single('image'), async (req, res) => {
@@ -65,7 +92,7 @@ router.post('/add', limiter, upload.single('image'), async (req, res) => {
   }
 });
 
-// Login (for reference, unchanged)
+// Login
 router.post('/login', async (req, res) => {
   const { name, password } = req.body;
   try {
@@ -85,29 +112,29 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// Edit Profile (Updated to require name and password)
-router.put('/edit/:id', limiter, upload.single('image'), async (req, res) => {
+// Get current user profile
+router.get('/me', authenticate, async (req, res) => {
+  try {
+    res.json({ 
+      userId: req.profile._id, 
+      name: req.profile.name,
+      imageUrl: req.profile.imageUrl
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+// Edit Profile (requires authentication)
+router.put('/edit/:id', authenticate, limiter, upload.single('image'), async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, password, bio, skills, socialLinks, location, projects } = req.body;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ error: 'Invalid profile ID' });
+    if (req.profile._id.toString() !== id) {
+      return res.status(403).json({ error: 'Unauthorized to edit this profile' });
     }
 
-    const profile = await Profile.findById(id);
-    if (!profile) return res.status(404).json({ error: 'Profile not found' });
-
-    // Verify name and password
-    if (profile.name !== name) {
-      return res.status(401).json({ error: 'Incorrect name' });
-    }
-    const isMatch = await bcrypt.compare(password, profile.password);
-    if (!isMatch) {
-      return res.status(401).json({ error: 'Incorrect password' });
-    }
-
-    let imageUrl = profile.imageUrl;
+    const { bio, skills, socialLinks, location, projects } = req.body;
+    let imageUrl = req.profile.imageUrl;
+    
     if (req.file) {
       const result = await new Promise((resolve, reject) => {
         cloudinary.uploader.upload_stream({ resource_type: 'image' }, (error, result) => {
@@ -118,24 +145,27 @@ router.put('/edit/:id', limiter, upload.single('image'), async (req, res) => {
       imageUrl = result.secure_url;
     }
 
-    profile.name = name;
-    profile.bio = bio;
-    profile.skills = skills ? skills.split(',').map(s => s.trim()) : profile.skills;
-    profile.socialLinks = socialLinks ? JSON.parse(socialLinks) : profile.socialLinks;
-    profile.location = location;
-    profile.imageUrl = imageUrl;
-    profile.projects = projects ? JSON.parse(projects) : profile.projects;
-    profile.updatedAt = Date.now();
+    const updatedProfile = await Profile.findByIdAndUpdate(id, {
+      bio,
+      skills: skills ? skills.split(',').map(s => s.trim()) : req.profile.skills,
+      socialLinks: socialLinks ? JSON.parse(socialLinks) : req.profile.socialLinks,
+      location,
+      imageUrl,
+      projects: projects ? JSON.parse(projects) : req.profile.projects,
+      updatedAt: Date.now(),
+    }, { new: true });
 
-    await profile.save();
-    res.json({ message: 'Profile updated successfully', profile: { ...profile._doc, password: undefined } });
+    res.json({ 
+      message: 'Profile updated successfully', 
+      profile: { ...updatedProfile._doc, password: undefined } 
+    });
   } catch (err) {
     console.error('Edit Profile Error:', err.message);
     res.status(500).json({ error: 'Server error', details: err.message });
   }
 });
 
-// Get Single Profile (unchanged)
+// Get Single Profile
 router.get('/:id', async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
@@ -154,7 +184,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Get All Profiles (unchanged)
+// Get All Profiles
 router.get('/', async (req, res) => {
   try {
     const profiles = await Profile.find().select('-password').sort({ views: -1 }).limit(50);
@@ -165,7 +195,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Search Profiles (unchanged)
+// Search Profiles
 router.get('/search', async (req, res) => {
   try {
     const { q } = req.query;

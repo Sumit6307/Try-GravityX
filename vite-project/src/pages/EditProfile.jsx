@@ -1,7 +1,6 @@
-// src/pages/EditProfile.jsx
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { motion } from 'framer-motion';
 import Navbar from '../components/Navbar';
 import { FaUser, FaMapMarkerAlt, FaCode, FaLink, FaPlus, FaTrash, FaRocket } from 'react-icons/fa';
@@ -19,39 +18,59 @@ function EditProfile() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const credentials = JSON.parse(localStorage.getItem(`editCredentials_${id}`));
-        if (!credentials || !credentials.name || !credentials.password) {
-          setError('Please authenticate from the profile page first.');
-          setLoading(false);
-          return;
-        }
+// Update the fetchProfile function in EditProfile.jsx
+const fetchProfile = async () => {
+  try {
+    setLoading(true);
+    const token = localStorage.getItem('authToken');
+    
+    if (!token) {
+      setError('Please login first');
+      setLoading(false);
+      return;
+    }
 
-        const profileRes = await axios.get(`http://localhost:5000/api/profiles/${id}`);
-        const profile = profileRes.data;
+    const [profileRes, meRes] = await Promise.all([
+      axios.get(`http://localhost:5000/api/profiles/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      }),
+      axios.get('http://localhost:5000/api/profiles/me', {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+    ]);
 
-        setFormData({
-          name: profile.name,
-          bio: profile.bio || '',
-          skills: profile.skills.join(', '),
-          github: profile.socialLinks.github || '',
-          linkedin: profile.socialLinks.linkedin || '',
-          twitter: profile.socialLinks.twitter || '',
-          instagram: profile.socialLinks.instagram || '',
-          location: profile.location || '',
-          image: null,
-          projects: profile.projects || [{ title: '', description: '', codeSnippet: '', url: '' }],
-          password: credentials.password, // Store password for submission
-        });
-        setBioLength(profile.bio?.length || 0);
-      } catch (err) {
-        console.error('Fetch Error:', err.response || err.message);
-        setError('Failed to load profile data. Please try again.');
-      } finally {
-        setLoading(false);
-      }
-    };
+    if (meRes.data.userId !== id) {
+      setError('You can only edit your own profile');
+      setLoading(false);
+      return;
+    }
+
+    const profile = profileRes.data;
+    setFormData({
+      name: profile.name,
+      bio: profile.bio || '',
+      skills: profile.skills.join(', '),
+      github: profile.socialLinks.github || '',
+      linkedin: profile.socialLinks.linkedin || '',
+      twitter: profile.socialLinks.twitter || '',
+      instagram: profile.socialLinks.instagram || '',
+      location: profile.location || '',
+      image: null,
+      projects: profile.projects || [{ title: '', description: '', codeSnippet: '', url: '' }],
+    });
+    setBioLength(profile.bio?.length || 0);
+  } catch (err) {
+    console.error('Fetch Error:', err);
+    if (err.response?.status === 401) {
+      localStorage.removeItem('authToken');
+      setError('Session expired. Please login again.');
+    } else {
+      setError(err.response?.data?.error || 'Failed to load profile data. Please try again.');
+    }
+  } finally {
+    setLoading(false);
+  }
+};
     fetchProfile();
   }, [id]);
 
@@ -80,9 +99,13 @@ function EditProfile() {
     setError('');
     setSuccess(false);
 
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      setError('Please login first');
+      return;
+    }
+
     const data = new FormData();
-    data.append('name', formData.name);
-    data.append('password', formData.password); // Use stored password
     data.append('bio', formData.bio);
     data.append('skills', formData.skills);
     data.append('socialLinks', JSON.stringify({
@@ -97,9 +120,11 @@ function EditProfile() {
 
     try {
       await axios.put(`http://localhost:5000/api/profiles/edit/${id}`, data, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+        headers: { 
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${token}`
+        },
       });
-      localStorage.removeItem(`editCredentials_${id}`); // Clean up after successful edit
       setSuccess(true);
       setTimeout(() => navigate(`/profile/${id}`), 2000);
     } catch (err) {

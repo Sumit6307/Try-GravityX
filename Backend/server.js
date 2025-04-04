@@ -90,5 +90,13 @@ endpoints.forEach(endpoint => {
 // Basic route for testing
 app.get('/', (req, res) => res.send('Backend is running'));
 
+app.use((err, req, res, next) => {
+  console.error('Error:', err.message);
+  res.status(err.status || 500).json({
+    error: err.message || 'Internal Server Error',
+    details: process.env.NODE_ENV === 'development' ? err.stack : undefined
+  });
+});
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

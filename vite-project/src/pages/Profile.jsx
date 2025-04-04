@@ -1,4 +1,3 @@
-// src/pages/Profile.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -21,20 +20,49 @@ function Profile() {
   const [credentials, setCredentials] = useState({ name: '', password: '' });
   const [authError, setAuthError] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
+  const [isCurrentUser, setIsCurrentUser] = useState(false);
 
   useEffect(() => {
-    const fetchProfile = async () => {
+    // Update the fetchProfile function in Profile.jsx
+const fetchProfile = async () => {
+  try {
+    setLoading(true);
+    const token = localStorage.getItem('authToken');
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    
+    const response = await axios.get(`http://localhost:5000/api/profiles/${id}`, { headers });
+    setProfileData(response.data);
+    
+    if (token) {
       try {
-        setLoading(true);
-        const response = await axios.get(`http://localhost:5000/api/profiles/${id}`);
-        setProfileData(response.data);
-      } catch (error) {
-        console.error('Fetch Error:', error.message);
-        setProfileData({ error: 'Failed to load profile' });
-      } finally {
-        setLoading(false);
+        const meResponse = await axios.get('http://localhost:5000/api/profiles/me', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setIsCurrentUser(meResponse.data.userId === id);
+      } catch (meError) {
+        console.log('Not logged in or token expired');
+        setIsCurrentUser(false);
       }
-    };
+    }
+  } catch (error) {
+    console.error('Fetch Error:', error);
+    if (error.response?.status === 401) {
+      // Handle unauthorized (likely token expired)
+      localStorage.removeItem('authToken');
+      setProfileData({ 
+        error: 'Please login again',
+        ...(error.response?.data || {})
+      });
+    } else {
+      setProfileData({ 
+        error: 'Failed to load profile',
+        details: error.message
+      });
+    }
+  } finally {
+    setLoading(false);
+  }
+};
     fetchProfile();
   }, [id]);
 
@@ -55,20 +83,20 @@ function Profile() {
     setAuthLoading(true);
 
     try {
-      const data = new FormData();
-      data.append('name', credentials.name);
-      data.append('password', credentials.password);
-
-      await axios.put(`http://localhost:5000/api/profiles/edit/${id}`, data, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-
-      localStorage.setItem(`editCredentials_${id}`, JSON.stringify(credentials));
-      setAuthLoading(false);
-      navigate(`/edit-profile/${id}`);
+      const response = await axios.post('http://localhost:5000/api/profiles/login', credentials);
+      localStorage.setItem('authToken', response.data.token);
+      localStorage.setItem('userProfileId', response.data.profile._id);
+      localStorage.setItem('userProfileName', response.data.profile.name);
+      
+      if (response.data.profile._id === id) {
+        navigate(`/edit-profile/${id}`);
+      } else {
+        setAuthError('These credentials do not match this profile');
+      }
     } catch (err) {
-      console.error('Edit Auth Error:', err.response || err.message);
+      console.error('Login Error:', err.response || err.message);
       setAuthError(err.response?.data?.error || 'Invalid name or password. Please try again.');
+    } finally {
       setAuthLoading(false);
     }
   };
@@ -104,7 +132,7 @@ function Profile() {
       <div className="pt-20 px-4">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,212,255,0.1)_0%,transparent_70%)] -z-10" />
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500/50 to-purple-500/50" />
-        <motion.div variants={containerVariants} initial="hidden" animate="visible" className="max-w-4xl mx-auto bg-gray-900/70 backdrop-blur-md rounded-xl p-8 shadow-[0_0_30px_rgba(0,212,255,0.2)] border border-cyan-500/20">
+        <motion.div variants={containerVariants} initial="hidden" animate="visible" className="mt-20 max-w-4xl mx-auto bg-gray-900/70 backdrop-blur-md rounded-xl p-8 shadow-[0_0_30px_rgba(0,212,255,0.2)] border border-cyan-500/20">
           <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
             <motion.img
               src={imageUrl}
@@ -132,17 +160,22 @@ function Profile() {
                 )}
               </motion.div>
               <motion.p variants={itemVariants} className="text-sm text-gray-400 mt-3">Views: {views}</motion.p>
-              <motion.button
-                onClick={handleEditClick}
-                variants={itemVariants}
-                whileHover={{ scale: 1.05, boxShadow: '0 0 20px rgba(0, 212, 255, 0.6)' }}
-                whileTap={{ scale: 0.95 }}
-                className="mt-6 bg-gradient-to-r from-cyan-500 to-purple-500 text-white py-3 px-6 rounded-lg flex items-center gap-2 font-semibold"
-              >
-                <FaEdit /> Edit Profile
-              </motion.button>
+              
+              {isCurrentUser && (
+                <motion.button
+                  onClick={handleEditClick}
+                  variants={itemVariants}
+                  whileHover={{ scale: 1.05, boxShadow: '0 0 20px rgba(0, 212, 255, 0.6)' }}
+                  whileTap={{ scale: 0.95 }}
+                  className="mt-6 bg-gradient-to-r from-cyan-500 to-purple-500 text-white py-3 px-6 rounded-lg flex items-center gap-2 font-semibold"
+                >
+                  <FaEdit /> Edit Profile
+                </motion.button>
+              )}
             </div>
           </div>
+
+
           <motion.div variants={itemVariants} className="mt-12">
             <h2 className="text-3xl font-bold text-cyan-400 mb-6 flex items-center"><FaCode className="mr-2" /> Projects</h2>
             {projects.length > 0 ? (
