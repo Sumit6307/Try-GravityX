@@ -1,7 +1,7 @@
 // src/components/Navbar.jsx
 import React, { useState, useEffect } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { FaUserPlus, FaHome, FaBars, FaTimes, FaUser, FaEdit, FaSignOutAlt, FaSignInAlt } from 'react-icons/fa';
+import { FaUserPlus, FaHome, FaBars, FaTimes, FaUser, FaEdit, FaSignOutAlt, FaSignInAlt, FaUmbrellaBeach } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 
 // Animation variants
@@ -51,6 +51,14 @@ function Navbar() {
               <FaHome className="mr-2" /> Home
             </motion.div>
           </NavLink>
+          
+          {/* Paradise Link - Added right after Home */}
+          <NavLink to="/paradise" className={({ isActive }) => `flex items-center text-lg font-semibold ${isActive ? 'text-white-400' : 'text-white-300'}`}>
+            <motion.div variants={navItemVariants} whileHover="hover" className="flex items-center">
+              <FaUmbrellaBeach className="mr-2" /> Paradise
+            </motion.div> 
+          </NavLink>
+
           {userProfile ? (
             <>
               <NavLink to={`/profile/${userProfile.id}`} className={({ isActive }) => `flex items-center text-lg font-semibold ${isActive ? 'text-neonBlue' : 'text-gray-300'}`}>
@@ -99,6 +107,12 @@ function Navbar() {
           <NavLink to="/" className={({ isActive }) => `block py-3 px-4 text-lg font-semibold ${isActive ? 'text-neonBlue' : 'text-gray-300'} hover:bg-neonBlue/10 rounded-lg transition-colors duration-200`} onClick={toggleMenu}>
             <FaHome className="inline mr-2" /> Home
           </NavLink>
+          
+          {/* Paradise Link - Mobile Version */}
+          <NavLink to="/paradise" className={({ isActive }) => `block py-3 px-4 text-lg font-semibold ${isActive ? 'text-amber-400' : 'text-amber-300'} hover:bg-amber-400/10 rounded-lg transition-colors duration-200`} onClick={toggleMenu}>
+            <FaUmbrellaBeach className="inline mr-2" /> Paradise
+          </NavLink>
+
           {userProfile ? (
             <>
               <NavLink to={`/profile/${userProfile.id}`} className={({ isActive }) => `block py-3 px-4 text-lg font-semibold ${isActive ? 'text-neonBlue' : 'text-gray-300'} hover:bg-neonBlue/10 rounded-lg transition-colors duration-200`} onClick={toggleMenu}>
