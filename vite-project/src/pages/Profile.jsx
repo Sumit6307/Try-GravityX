@@ -14,6 +14,7 @@ const buttonVariants = { hover: { scale: 1.05, boxShadow: '0 0 15px rgba(0, 212,
 function Profile() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const defaultImage = 'https://img.freepik.com/premium-vector/vector-flat-illustration-grayscale-avatar-user-profile-person-icon-gender-neutral-silhouette-profile-picture-suitable-social-media-profiles-icons-screensavers-as-templatex9xa_719432-2210.jpg?semt=ais_hybrid';
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showAuthForm, setShowAuthForm] = useState(false);
@@ -23,46 +24,35 @@ function Profile() {
   const [isCurrentUser, setIsCurrentUser] = useState(false);
 
   useEffect(() => {
-    // Update the fetchProfile function in Profile.jsx
-const fetchProfile = async () => {
-  try {
-    setLoading(true);
-    const token = localStorage.getItem('authToken');
-    const headers = token ? { Authorization: `Bearer ${token}` } : {};
-    
-    const response = await axios.get(`http://localhost:5000/api/profiles/${id}`, { headers });
-    setProfileData(response.data);
-    
-    if (token) {
+    const fetchProfile = async () => {
       try {
-        const meResponse = await axios.get('http://localhost:5000/api/profiles/me', {
-          headers: { Authorization: `Bearer ${token}` }
+        setLoading(true);
+        const token = localStorage.getItem('authToken');
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        
+        const response = await axios.get(`http://localhost:5000/api/profiles/${id}`, { headers });
+        setProfileData(response.data);
+        
+        if (token) {
+          try {
+            const meResponse = await axios.get('http://localhost:5000/api/profiles/me', {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            setIsCurrentUser(meResponse.data.userId === id);
+          } catch (meError) {
+            setIsCurrentUser(false);
+          }
+        }
+      } catch (error) {
+        console.error('Fetch Error:', error.response?.data || error.message);
+        setProfileData({ 
+          error: error.response?.status === 401 ? 'Please login again' : 'Failed to load profile',
+          details: error.message,
         });
-        setIsCurrentUser(meResponse.data.userId === id);
-      } catch (meError) {
-        console.log('Not logged in or token expired');
-        setIsCurrentUser(false);
+      } finally {
+        setLoading(false);
       }
-    }
-  } catch (error) {
-    console.error('Fetch Error:', error);
-    if (error.response?.status === 401) {
-      // Handle unauthorized (likely token expired)
-      localStorage.removeItem('authToken');
-      setProfileData({ 
-        error: 'Please login again',
-        ...(error.response?.data || {})
-      });
-    } else {
-      setProfileData({ 
-        error: 'Failed to load profile',
-        details: error.message
-      });
-    }
-  } finally {
-    setLoading(false);
-  }
-};
+    };
     fetchProfile();
   }, [id]);
 
@@ -94,7 +84,7 @@ const fetchProfile = async () => {
         setAuthError('These credentials do not match this profile');
       }
     } catch (err) {
-      console.error('Login Error:', err.response || err.message);
+      console.error('Login Error:', err.response?.data || err.message);
       setAuthError(err.response?.data?.error || 'Invalid name or password. Please try again.');
     } finally {
       setAuthLoading(false);
@@ -124,7 +114,7 @@ const fetchProfile = async () => {
     </div>
   );
 
-  const { name = 'Unnamed Profile', bio = 'No bio provided', location = 'Unknown Location', socialLinks = {}, projects = [], views = 0, imageUrl = 'https://via.placeholder.com/150' } = profileData || {};
+  const { name = 'Unnamed Profile', bio = 'No bio provided', location = 'Unknown Location', socialLinks = {}, projects = [], views = 0, imageUrl = defaultImage } = profileData || {};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 text-white overflow-hidden relative">
@@ -174,7 +164,6 @@ const fetchProfile = async () => {
               )}
             </div>
           </div>
-
 
           <motion.div variants={itemVariants} className="mt-12">
             <h2 className="text-3xl font-bold text-cyan-400 mb-6 flex items-center"><FaCode className="mr-2" /> Projects</h2>

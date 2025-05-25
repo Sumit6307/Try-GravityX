@@ -1,11 +1,9 @@
-// src/components/ProfileCard.jsx
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
 import { FaInstagram, FaTwitter, FaLinkedin, FaMapMarkerAlt, FaCode, FaShareAlt, FaWhatsapp, FaFacebook, FaLink, FaEdit } from 'react-icons/fa';
 
-// Animation variants for skills
 const skillVariants = {
   animate: {
     x: ['100%', '-100%'],
@@ -20,7 +18,6 @@ const skillVariants = {
   },
 };
 
-// Card hover animation
 const cardVariants = {
   hover: {
     scale: 1.03,
@@ -29,13 +26,11 @@ const cardVariants = {
   },
 };
 
-// Button animation
 const buttonVariants = {
   hover: { scale: 1.05, boxShadow: '0 0 20px rgba(0, 212, 255, 0.5)', transition: { duration: 0.3 } },
   tap: { scale: 0.95 },
 };
 
-// Share menu animation
 const shareMenuVariants = {
   hidden: { opacity: 0, scale: 0.8, y: 10 },
   visible: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.2 } },
@@ -44,8 +39,8 @@ const shareMenuVariants = {
 function ProfileCard({ profile, onOpenProfile, layout = 'grid' }) {
   const [isShareMenuOpen, setIsShareMenuOpen] = useState(false);
   const [loggedInUserId, setLoggedInUserId] = useState(null);
+  const defaultImage = 'https://img.freepik.com/premium-vector/vector-flat-illustration-grayscale-avatar-user-profile-person-icon-gender-neutral-silhouette-profile-picture-suitable-social-media-profiles-icons-screensavers-as-templatex9xa_719432-2210.jpg?semt=ais_hybrid';
 
-  // Fetch logged-in user's ID
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (token) {
@@ -58,11 +53,9 @@ function ProfileCard({ profile, onOpenProfile, layout = 'grid' }) {
     }
   }, []);
 
-  // Generate profile URL
   const profileUrl = `${window.location.origin}/profile/${profile._id}`;
   const shareText = `Check out ${profile.name}'s profile on GravityX!`;
 
-  // Handle native Web Share API
   const handleNativeShare = () => {
     if (navigator.share) {
       navigator
@@ -78,7 +71,6 @@ function ProfileCard({ profile, onOpenProfile, layout = 'grid' }) {
     }
   };
 
-  // Custom share options
   const shareOptions = [
     {
       name: 'WhatsApp',
@@ -120,7 +112,6 @@ function ProfileCard({ profile, onOpenProfile, layout = 'grid' }) {
     },
   ];
 
-  // Layout specific styles
   const getCardClasses = () => {
     switch (layout) {
       case 'grid':
@@ -152,12 +143,11 @@ function ProfileCard({ profile, onOpenProfile, layout = 'grid' }) {
       transition={{ duration: 0.4 }}
       className={getCardClasses()}
     >
-      {/* Profile Header - Different structure for list view */}
       {layout === 'list' ? (
         <div className="flex flex-col md:flex-row gap-6">
           <div className="relative flex-shrink-0">
             <img
-              src={profile.imageUrl || 'https://via.placeholder.com/150'}
+              src={profile.imageUrl || defaultImage}
               alt={profile.name}
               className={getImageClasses()}
             />
@@ -179,7 +169,6 @@ function ProfileCard({ profile, onOpenProfile, layout = 'grid' }) {
                 </p>
               </div>
 
-              {/* Share Button and Views Badge */}
               <div className="flex items-center space-x-3">
                 <motion.button
                   onClick={handleNativeShare}
@@ -201,7 +190,6 @@ function ProfileCard({ profile, onOpenProfile, layout = 'grid' }) {
               {profile.bio || 'No bio provided'}
             </p>
 
-            {/* Skills Section for List View */}
             <div className="mt-4 relative overflow-hidden">
               <h3 className="text-sm font-semibold text-cyan-400 mb-2 flex items-center">
                 <FaCode className="mr-2" size={12} /> Skills
@@ -245,11 +233,10 @@ function ProfileCard({ profile, onOpenProfile, layout = 'grid' }) {
         </div>
       ) : (
         <>
-          {/* Default layout for grid and masonry */}
           <div className="flex items-start space-x-5">
             <div className="relative">
               <img
-                src={profile.imageUrl || 'https://via.placeholder.com/150'}
+                src={profile.imageUrl || defaultImage}
                 alt={profile.name}
                 className={getImageClasses()}
               />
@@ -272,7 +259,6 @@ function ProfileCard({ profile, onOpenProfile, layout = 'grid' }) {
             </div>
           </div>
 
-          {/* Animated Skills Box */}
           <div className="mt-6 relative">
             <h3 className="text-xl font-semibold text-cyan-400 mb-3 flex items-center drop-shadow-[0_0_6px_rgba(0,212,255,0.3)]">
               <FaCode className="mr-2" /> Skills
@@ -315,7 +301,6 @@ function ProfileCard({ profile, onOpenProfile, layout = 'grid' }) {
         </>
       )}
 
-      {/* Social Links */}
       <div className={`${layout === 'list' ? 'mt-6' : 'mt-6'} flex justify-center space-x-6`}>
         {profile.socialLinks.github && (
           <motion.a
@@ -361,7 +346,6 @@ function ProfileCard({ profile, onOpenProfile, layout = 'grid' }) {
         )}
       </div>
 
-      {/* Edit Button and Connect Button */}
       <div className={`${layout === 'list' ? 'mt-6 flex flex-col md:flex-row gap-4' : 'mt-6 flex flex-col space-y-4'}`}>
         {loggedInUserId === profile._id && (
           <motion.div
@@ -391,7 +375,6 @@ function ProfileCard({ profile, onOpenProfile, layout = 'grid' }) {
         </motion.a>
       </div>
 
-      {/* Custom Share Menu */}
       {isShareMenuOpen && (
         <motion.div
           variants={shareMenuVariants}

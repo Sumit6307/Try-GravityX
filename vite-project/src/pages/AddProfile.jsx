@@ -1,16 +1,22 @@
-// src/pages/AddProfile.jsx
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Navbar from '../components/Navbar';
-import { FaUser, FaMapMarkerAlt, FaCode, FaLink, FaPlus, FaTrash, FaRocket, FaLock } from 'react-icons/fa';
+import { FaUser, FaMapMarkerAlt, FaCode, FaLink, FaPlus, FaTrash, FaRocket, FaLock, FaArrowLeft } from 'react-icons/fa';
 
 const inputVariants = { focus: { scale: 1.02, borderColor: '#00D4FF', transition: { duration: 0.2 } } };
 const buttonVariants = { hover: { scale: 1.05, boxShadow: '0 0 15px rgba(0, 212, 255, 0.5)' }, tap: { scale: 0.95 } };
+const backButtonVariants = {
+  hidden: { x: -50, opacity: 0 },
+  visible: { x: 0, opacity: 1, transition: { type: 'spring', stiffness: 120, damping: 12, delay: 0.3 } },
+  hover: { x: 5, scale: 1.05, boxShadow: '0 0 25px rgba(0, 212, 255, 0.8)', backgroundColor: 'rgba(0, 212, 255, 0.3)', transition: { type: 'spring', stiffness: 300, damping: 15 } },
+  tap: { scale: 0.9, backgroundColor: 'rgba(0, 212, 255, 0.4)' },
+};
 
 function AddProfile() {
   const navigate = useNavigate();
+  const defaultImage = 'https://img.freepik.com/premium-vector/vector-flat-illustration-grayscale-avatar-user-profile-person-icon-gender-neutral-silhouette-profile-picture-suitable-social-media-profiles-icons-screensavers-as-templatex9xa_719432-2210.jpg?semt=ais_hybrid';
   const [formData, setFormData] = useState({
     name: '',
     password: '',
@@ -23,11 +29,12 @@ function AddProfile() {
     instagram: '',
     location: '',
     image: null,
-    projects: [{ title: '', description: '', codeSnippet: '', url: '' }],
+    projects: [],
   });
   const [bioLength, setBioLength] = useState(0);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [imagePreview, setImagePreview] = useState(defaultImage);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -35,7 +42,17 @@ function AddProfile() {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleFileChange = (e) => setFormData({ ...formData, image: e.target.files[0] });
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    setFormData({ ...formData, image: file });
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => setImagePreview(reader.result);
+      reader.readAsDataURL(file);
+    } else {
+      setImagePreview(defaultImage);
+    }
+  };
 
   const handleProjectChange = (idx, field, value) => {
     const newProjects = [...formData.projects];
@@ -45,18 +62,17 @@ function AddProfile() {
 
   const addProject = () => setFormData({ ...formData, projects: [...formData.projects, { title: '', description: '', codeSnippet: '', url: '' }] });
 
-  const removeProject = (idx) => {
-    if (formData.projects.length > 1) setFormData({ ...formData, projects: formData.projects.filter((_, i) => i !== idx) });
-  };
+  const removeProject = (idx) => setFormData({ ...formData, projects: formData.projects.filter((_, i) => i !== idx) });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setSuccess(false);
 
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      return;
+    if (!formData.name) return setError('Name is required');
+    if (!formData.password || formData.password !== formData.confirmPassword) return setError('Passwords do not match or are empty');
+    for (const project of formData.projects) {
+      if (!project.title) return setError('Project title is required for all projects');
     }
 
     const data = new FormData();
@@ -75,6 +91,11 @@ function AddProfile() {
     if (formData.image) data.append('image', formData.image);
 
     try {
+      console.log('Submitting profile with data:', {
+        name: formData.name,
+        hasImage: !!formData.image,
+        projects: formData.projects,
+      });
       const res = await axios.post('http://localhost:5000/api/profiles/add', data, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
@@ -84,7 +105,7 @@ function AddProfile() {
       setSuccess(true);
       setTimeout(() => navigate(`/profile/${res.data.profile._id}`), 2000);
     } catch (err) {
-      console.error(err);
+      console.error('Profile creation error:', err.response?.data || err.message);
       setError(err.response?.data?.error || 'Failed to add profile. Check console for details.');
     }
   };
@@ -92,6 +113,18 @@ function AddProfile() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black overflow-hidden relative">
       <Navbar />
+      <motion.button
+        variants={backButtonVariants}
+        initial="hidden"
+        animate="visible"
+        whileHover="hover"
+        whileTap="tap"
+        onClick={() => navigate(-1) || navigate('/')}
+        className="fixed top-30 left-6 z-20 flex items-center gap-2 px-4 py-2 md:px-6 md:py-3 bg-black/80 border border-cyan-500/50 rounded-full text-cyan-400 font-semibold text-base md:text-lg shadow-[0_0_10px_rgba(0,212,255,0.3)] hover:text-purple-400 animate-[pulse_3s_infinite]"
+      >
+        <FaArrowLeft className="text-lg md:text-xl" /> Back
+      </motion.button>
+
       <div className="pt-24 pb-12">
         <motion.div
           initial={{ opacity: 0, y: 50 }}
@@ -165,12 +198,25 @@ function AddProfile() {
                 whileFocus="focus"
                 variants={inputVariants}
               />
-              <motion.input
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                className="w-full p-4 rounded-lg bg-gray-800 text-white border border-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded file:bg-neonBlue/20 file:text-neonBlue file:border-0 hover:file:bg-neonBlue/40"
-              />
+              <div className="space-y-4">
+                <div className="flex items-center justify-center">
+                  <motion.img
+                    src={imagePreview}
+                    alt="Profile preview"
+                    className="w-24 h-24 rounded-full object-cover border-2 border-cyan-500 shadow-[0_0_10px_rgba(0,212,255,0.3)]"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.3 }}
+                  />
+                </div>
+                <motion.input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="w-full p-4 rounded-lg bg-gray-800 text-white border border-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded file:bg-neonBlue/20 file:text-neonBlue file:border-0 hover:file:bg-neonBlue/40"
+                />
+                <p className="text-gray-400 text-sm text-center">Optional: Upload a profile image or use the default avatar.</p>
+              </div>
             </div>
             <div className="space-y-6">
               <h2 className="text-2xl text-neonPurple font-semibold flex items-center">
@@ -236,6 +282,7 @@ function AddProfile() {
               <h2 className="text-2xl text-neonPurple font-semibold flex items-center">
                 <FaCode className="mr-2" /> Projects
               </h2>
+              <p className="text-gray-400 text-sm">Add projects to showcase your work. Title is required for each project.</p>
               {formData.projects.map((project, idx) => (
                 <motion.div
                   key={idx}
@@ -246,7 +293,7 @@ function AddProfile() {
                 >
                   <motion.input
                     type="text"
-                    placeholder="Project Title"
+                    placeholder="Project Title (required)"
                     value={project.title}
                     onChange={(e) => handleProjectChange(idx, 'title', e.target.value)}
                     className="w-full p-4 rounded-lg bg-gray-900 text-white border border-gray-700 focus:outline-none"
@@ -281,16 +328,14 @@ function AddProfile() {
                     whileFocus="focus"
                     variants={inputVariants}
                   />
-                  {formData.projects.length > 1 && (
-                    <motion.button
-                      type="button"
-                      onClick={() => removeProject(idx)}
-                      className="text-red-400 hover:text-red-300 flex items-center"
-                      whileHover={{ scale: 1.05 }}
-                    >
-                      <FaTrash className="mr-1" /> Remove Project
-                    </motion.button>
-                  )}
+                  <motion.button
+                    type="button"
+                    onClick={() => removeProject(idx)}
+                    className="text-red-400 hover:text-red-300 flex items-center"
+                    whileHover={{ scale: 1.05 }}
+                  >
+                    <FaTrash className="mr-1" /> Remove Project
+                  </motion.button>
                 </motion.div>
               ))}
               <motion.button
@@ -299,7 +344,7 @@ function AddProfile() {
                 className="text-neonBlue hover:text-neonPurple flex items-center"
                 whileHover={{ scale: 1.05 }}
               >
-                <FaPlus className="mr-2" /> Add Another Project
+                <FaPlus className="mr-2" /> Add Project
               </motion.button>
             </div>
             <motion.button
